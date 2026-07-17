@@ -422,6 +422,7 @@
     </button>
 
     <div class="side-foot">
+      <div class="status" id="cloudBadge" style="display:none"><span class="sdot on" style="background:var(--mandatory,#1F6FB2)"></span><span class="mono" id="cloudWho"></span><button id="signOutBtn" title="Sign out" style="margin-left:auto;border:none;background:none;color:var(--text-3);cursor:pointer;font-size:11px;font-weight:600">Sign out</button></div>
       <div class="status"><span class="sdot" id="statusDot"></span><span class="mono" id="statusText">Key required</span></div>
       <button class="tool-btn" id="settingsBtn">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.2.63.77 1.09 1.51 1.09H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="1.4"/></svg>
@@ -539,6 +540,31 @@
 
 <div id="printArea"></div>
 
+<!-- Auth overlay (shown only when cloud is configured) -->
+<div class="overlay" id="authOverlay" style="z-index:80">
+  <div class="modal set" style="max-width:400px">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+      <div class="logo glogo"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><div style="font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:17px">Guardian</div><div style="font-size:11px;color:var(--text-3)">Organization sign-in</div></div>
+    </div>
+    <div class="field"><label for="authEmail">Work email</label><input id="authEmail" type="email" autocomplete="username" placeholder="you@company.com" style="font-family:inherit"/></div>
+    <div class="field"><label for="authPw">Password</label><input id="authPw" type="password" autocomplete="current-password" placeholder="••••••••"/></div>
+    <div class="prov-test" id="authMsg"></div>
+    <div class="m-actions"><button class="btn-save" id="authSignIn" style="flex:1">Sign in</button></div>
+    <div style="font-size:11.5px;color:var(--text-3);margin-top:12px;line-height:1.5">Accounts are provisioned by your organization admin. EHS Executives get their site's register; admins manage their organization.</div>
+  </div>
+</div>
+
+<!-- Hidden master admin panel (server-enforced; UI opens only for role=master) -->
+<div class="overlay" id="masterOverlay">
+  <div class="modal set" style="max-width:600px">
+    <h2>Master admin</h2>
+    <p class="m-sub">Organizations, users and roles. Every action here is enforced by database row-level security — the UI being hidden is not the security boundary.</p>
+    <div id="masterBody" style="max-height:56vh;overflow-y:auto"></div>
+    <div class="m-actions"><button class="btn-ghost" id="masterNewOrg">+ New organization</button><button class="btn-save" id="doneMaster" style="flex:1">Close</button></div>
+  </div>
+</div>
+
 <!-- Risk modal -->
 <div class="overlay" id="riskOverlay">
   <div class="modal risk">
@@ -622,6 +648,18 @@
 </div>
 
 <script>
+/* ================= CLOUD CONFIG =================
+   GitHub Pages hosts ONLY this public frontend. Auth, roles and data live in
+   Supabase (free tier). Fill these two values after running supabase-setup.sql:
+   - url: your project URL   - anonKey: the "anon public" key (SAFE to publish;
+     it grants nothing beyond what row-level security allows).
+   NEVER put the service_role key anywhere in this repo.
+   Leave both empty ('') to run in local mode (no login, data stays on-device). */
+const CLOUD={url:'https://yhiwmwkrtvqkeevcgkqj.supabase.co',anonKey:'sb_publishable_jcmNK-g19f_YIfy8pJsJjw_OyM1R4qJ'};
+function cloudEnabled(){return !!(CLOUD.url&&CLOUD.anonKey)}
+let sb=null;                      /* supabase client */
+const cloud={user:null,role:null,org:null,orgName:''};
+
 /* storage shim */
 const mem={};
 const store={
@@ -1561,6 +1599,114 @@ renderModes();renderSuggest();renderCtx();renderRailTools();renderMatrix();rende
 bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();updateStandardsSub();
 setStatus();toggleSend();refreshLogo();
 if(!store.get('guardian.seen')){store.set('guardian.seen','1');setTimeout(openSettings,500);}
+
+/* ================= CLOUD: auth, sync, master panel ================= */
+function authMsg(t,cls){const m=$('#authMsg');m.className='prov-test '+(cls||'');m.textContent=t||'';}
+function showAuth(v){$('#authOverlay').classList.toggle('show',v);}
+function setCloudBadge(){
+  const b=$('#cloudBadge');if(!cloudEnabled()){b.style.display='none';return;}
+  b.style.display='flex';
+  $('#cloudWho').textContent=cloud.user?((cloud.orgName||'No org')+' · '+(cloud.role||'user')):'signed out';
+}
+async function loadSupabase(){
+  if(window.supabase)return;
+  await new Promise((res,rej)=>{const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.onload=res;s.onerror=()=>rej(new Error('Could not load auth library'));document.head.appendChild(s);});
+}
+async function fetchProfile(){
+  const {data,error}=await sb.from('profiles').select('role,org_id,full_name,organizations(name)').eq('id',cloud.user.id).single();
+  if(error)throw error;
+  cloud.role=data.role;cloud.org=data.org_id;cloud.orgName=(data.organizations&&data.organizations.name)||'';
+}
+async function cloudLoadDays(){
+  if(!sb||!cloud.org)return;
+  const {data,error}=await sb.from('daily_entries').select('date,data').eq('org_id',cloud.org);
+  if(error)return;
+  (data||[]).forEach(r=>{state.daily[r.date]=r.data;});   /* server wins per date */
+  persistDaily();
+  if(state.view==='daily')renderDaily();
+}
+async function cloudSaveDay(dateISO,entry){
+  if(!sb||!cloud.org)return;
+  await sb.from('daily_entries').upsert({org_id:cloud.org,date:dateISO,data:entry,updated_by:cloud.user.id});
+}
+async function afterSignIn(){
+  try{await fetchProfile();}catch(e){authMsg('Signed in, but no profile/role is set for this account — ask your admin.','bad');await sb.auth.signOut();return;}
+  showAuth(false);setCloudBadge();cloudLoadDays();
+}
+async function initCloud(){
+  if(!cloudEnabled())return;
+  try{await loadSupabase();}catch(e){console.warn(e);return;}   /* offline: local mode */
+  sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey);
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){cloud.user=session.user;await afterSignIn();}
+  else showAuth(true);
+  sb.auth.onAuthStateChange((_e,s)=>{if(!s){cloud.user=null;cloud.role=null;cloud.org=null;setCloudBadge();showAuth(true);}});
+}
+$('#authSignIn').onclick=async()=>{
+  const email=$('#authEmail').value.trim(),pw=$('#authPw').value;
+  if(!email||!pw){authMsg('Enter email and password.','bad');return;}
+  authMsg('Signing in…','wait');
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){authMsg(error.message,'bad');return;}
+  cloud.user=data.user;authMsg('');await afterSignIn();
+};
+$('#authPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#authSignIn').click();});
+$('#signOutBtn').onclick=async()=>{if(sb)await sb.auth.signOut();};
+
+/* hook daily saves into the cloud */
+const _persistDaily=persistDaily;
+persistDaily=function(){_persistDaily();};
+(function(){const orig=$('#dailySave').onclick;
+  $('#dailySave').onclick=()=>{orig();const sel=$('#d_date').value;if(sel&&state.daily[sel])cloudSaveDay(sel,state.daily[sel]);};
+})();
+
+/* ---- hidden master panel: Ctrl+Shift+M or 5 quick clicks on the brand mark; opens only for role=master ---- */
+let brandClicks=0,brandTimer=null;
+function tryOpenMaster(){
+  if(!sb||cloud.role!=='master')return;      /* silently ignore for everyone else */
+  renderMaster();$('#masterOverlay').classList.add('show');
+}
+document.querySelector('.brand .logo').addEventListener('click',()=>{
+  brandClicks++;clearTimeout(brandTimer);brandTimer=setTimeout(()=>brandClicks=0,1600);
+  if(brandClicks>=5){brandClicks=0;tryOpenMaster();}
+});
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='m')tryOpenMaster();});
+function closeMaster(){$('#masterOverlay').classList.remove('show')}
+$('#doneMaster').onclick=closeMaster;
+$('#masterOverlay').onclick=e=>{if(e.target===$('#masterOverlay'))closeMaster()};
+async function renderMaster(){
+  const box=$('#masterBody');box.innerHTML='<div class="prov-test wait">Loading…</div>';
+  const [{data:orgs},{data:profs}]=await Promise.all([
+    sb.from('organizations').select('id,name'),
+    sb.from('profiles').select('id,full_name,role,org_id')
+  ]);
+  if(!orgs||!profs){box.innerHTML='<div class="prov-test bad">Access denied by database policy.</div>';return;}
+  const orgOpt=o=>'<option value="">— no org —</option>'+orgs.map(x=>'<option value="'+x.id+'"'+(x.id===o?' selected':'')+'>'+esc(x.name)+'</option>').join('');
+  box.innerHTML='<div class="doc-sec">Organizations ('+orgs.length+')</div>'
+    +orgs.map(o=>'<div class="doc-row"><div class="doc-meta"><b>'+esc(o.name)+'</b><span>'+profs.filter(p=>p.org_id===o.id).length+' member(s)</span></div></div>').join('')
+    +'<div class="doc-sec" style="margin-top:12px">Users ('+profs.length+')</div>'
+    +profs.map(p=>'<div class="doc-row" data-uid="'+p.id+'"><div class="doc-meta"><b>'+esc(p.full_name||p.id.slice(0,8))+'</b></div>'
+      +'<div class="doc-acts"><select class="doc-btn" data-f="role"><option'+(p.role==='ehs_executive'?' selected':'')+'>ehs_executive</option><option'+(p.role==='org_admin'?' selected':'')+'>org_admin</option><option'+(p.role==='master'?' selected':'')+'>master</option></select>'
+      +'<select class="doc-btn" data-f="org">'+orgOpt(p.org_id)+'</select>'
+      +'<button class="doc-btn" data-f="save">Save</button></div></div>').join('')
+    +'<div class="doc-note">Create user accounts (email + password) in the Supabase dashboard → Authentication; they appear here after first sign-in. The service key never touches this site.</div>';
+  box.querySelectorAll('[data-uid]').forEach(row=>{
+    row.querySelector('[data-f="save"]').onclick=async()=>{
+      const role=row.querySelector('[data-f="role"]').value;
+      const org=row.querySelector('[data-f="org"]').value||null;
+      const {error}=await sb.from('profiles').update({role,org_id:org}).eq('id',row.dataset.uid);
+      row.querySelector('[data-f="save"]').textContent=error?'✗':'✓';
+      setTimeout(()=>row.querySelector('[data-f="save"]').textContent='Save',1200);
+    };
+  });
+}
+$('#masterNewOrg').onclick=async()=>{
+  const name=prompt('Organization name:');if(!name)return;
+  await sb.from('organizations').insert({name});renderMaster();
+};
+initCloud();
 </script>
 </body>
 </html>
