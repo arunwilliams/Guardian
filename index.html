@@ -159,7 +159,7 @@
   .overlay.show{display:grid}
   .modal{background:var(--surface);border-radius:var(--r-lg);width:100%;box-shadow:var(--shadow-lg);animation:pop .16s ease}
   @keyframes pop{from{transform:translateY(6px) scale(.99);opacity:.6}to{transform:none;opacity:1}}
-  .modal.set{max-width:460px;padding:24px}
+  .modal.set{max-width:560px;padding:24px;max-height:88vh;overflow-y:auto}
   .modal.risk{max-width:420px;padding:22px}
   .modal h2{font-family:"Hanken Grotesk",sans-serif;font-size:19px;font-weight:600;margin:0 0 4px}
   .modal .m-sub{font-size:13px;color:var(--text-2);margin:0 0 18px;line-height:1.5}
@@ -175,20 +175,73 @@
   .btn-ghost{background:var(--surface);color:var(--text-2)}
   .btn-ghost:hover{background:var(--surface-2)}
   #stdList{max-height:52vh;overflow-y:auto;margin-bottom:4px}
-  .prov-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-  .prov-tab{border:1px solid var(--border-2);background:var(--surface);border-radius:10px;padding:11px 12px;text-align:left;cursor:pointer;transition:.13s}
-  .prov-tab .pt-t{font-size:13.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
-  .prov-tab .pt-d{font-size:11px;color:var(--text-3);margin-top:2px}
+  .prov-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .prov-tab{position:relative;border:1px solid var(--border-2);background:var(--surface);border-radius:12px;padding:13px 14px;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s,background .15s,box-shadow .15s}
+  .prov-tab:hover{border-color:var(--border);transform:translateY(-2px);box-shadow:var(--shadow)}
+  .prov-tab.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px var(--accent-ring)}
+  .pt-top{display:flex;align-items:center;gap:7px}
+  .pt-name{font-family:"Hanken Grotesk",sans-serif;font-size:14px;font-weight:700;color:var(--text)}
+  .prov-tab.on .pt-name{color:var(--accent)}
   .prov-tab .pt-i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-  .prov-tab:hover{border-color:var(--border)}
-  .prov-tab.on{border-color:var(--accent);background:var(--accent-soft)}
-  .prov-tab.on .pt-t{color:var(--accent)}
+  .pt-badge{margin-left:auto;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-radius:999px;padding:3px 8px}
+  .b-inc{background:var(--surface-2);color:var(--text-2)}
+  .b-pro{background:var(--accent);color:#fff}
+  .b-free{background:#E8F5EC;color:var(--r-low)}
+  .prov-tab .pt-d{font-size:11px;color:var(--text-3);margin-top:3px}
+  .pt-pts{margin:9px 0 0;padding:0;list-style:none}
+  .pt-pts li{position:relative;font-size:11.5px;color:var(--text-2);line-height:1.45;padding-left:16px;margin-top:3px}
+  .pt-pts li::before{content:"✓";position:absolute;left:0;top:0;font-size:10px;font-weight:700;color:var(--accent)}
+  @media(max-width:560px){.prov-tabs{grid-template-columns:1fr}}
   .prov-note{font-size:12px;color:var(--text-2);line-height:1.5;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 12px;margin-bottom:4px}
   .prov-note code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
   .prov-test{font-size:12px;line-height:1.45;min-height:14px;margin:12px 0 2px}
   .prov-test.ok{color:var(--r-low)}
   .prov-test.bad{color:var(--r-crit)}
   .prov-test.wait{color:var(--text-3)}
+  .pset-lbl{font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:7px}
+  .preset-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+  .pset{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:500;color:var(--text-2);transition:.13s}
+  .pset:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+  #docList{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow-y:auto;margin-bottom:4px}
+  .doc-row{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:10px;padding:11px 13px;background:var(--bg)}
+  .doc-meta{flex:1;min-width:0}
+  .doc-meta b{font-size:13.5px;font-weight:600;display:block}
+  .doc-meta span{font-size:11.5px;color:var(--text-3)}
+  .doc-acts{display:flex;gap:6px;flex-shrink:0}
+  .doc-btn{border:1px solid var(--border-2);background:var(--surface);border-radius:8px;padding:6px 11px;font-size:12px;font-weight:600;color:var(--text-2);transition:.13s}
+  .doc-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .doc-sec{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;margin:6px 0 2px}
+  .prem-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:var(--accent);color:#fff;border-radius:999px;padding:2px 7px;vertical-align:1px;margin-left:5px}
+  .doc-note{font-size:11.5px;color:var(--text-3);line-height:1.5;border-top:1px dashed var(--border);padding-top:10px;margin-top:4px}
+  .plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .plan-card{border:1px solid var(--border-2);background:var(--surface);border-radius:12px;padding:13px 14px;transition:transform .15s,box-shadow .15s}
+  .plan-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .support-card{display:flex;align-items:center;gap:14px;border:1px solid var(--border);background:var(--accent-soft);border-radius:12px;padding:14px 16px;margin-bottom:4px}
+  .support-card b{font-size:13.5px;display:block}
+  .support-card span{font-size:12px;color:var(--text-2);line-height:1.45;display:block;margin-top:2px}
+  .support-card .pbtn{flex-shrink:0;text-decoration:none}
+  @media(max-width:560px){.plan-grid{grid-template-columns:1fr}.support-card{flex-direction:column;align-items:flex-start}}
+  /* daily dashboard */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow-sm)}
+  .kpi .kv{font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:22px;letter-spacing:-.01em;line-height:1.1}
+  .kpi .kl{font-size:11px;color:var(--text-2);margin-top:3px;line-height:1.3}
+  .kpi .kc{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--text-3);margin-top:5px}
+  .num-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;margin-top:12px}
+  .num-grid .fld input{font-family:"IBM Plex Mono",monospace}
+  .mini-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+  .mini-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);text-align:right;padding:6px 8px;border-bottom:1px solid var(--border)}
+  .mini-table th:first-child,.mini-table td:first-child{text-align:left}
+  .mini-table td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text)}
+  .mini-table tr:hover td{background:var(--surface-2);cursor:pointer}
+  .bar-row{display:flex;align-items:flex-end;gap:4px;height:86px;padding-top:6px}
+  .bar{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:3px;opacity:.85;position:relative;transition:opacity .15s}
+  .bar:hover{opacity:1}
+  .bar.zero{background:var(--border-2)}
+  .bar-lbls{display:flex;gap:4px;margin-top:5px}
+  .bar-lbls span{flex:1;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:8.5px;color:var(--text-3)}
+  @media(max-width:820px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.num-grid{grid-template-columns:1fr}}
   .std-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-size:13.5px;color:var(--text);cursor:pointer;margin-bottom:8px;transition:.13s}
   .std-item:hover{border-color:var(--border-2)}
   .std-item.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -337,10 +390,24 @@
     <div class="side-label">Workspace</div>
     <nav class="modes" id="modes"></nav>
 
+    <div class="side-label">Site</div>
+    <button class="tool-btn" id="dailyNav">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7 15h3v3H7z" fill="currentColor" opacity=".5"/><path d="M13 14l2 2 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tt">Daily dashboard<span class="sub">Log activities · daily vs cumulative</span></span>
+    </button>
+
     <div class="side-label">Permits</div>
     <button class="tool-btn" id="permitNav">
       <svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8a1 1 0 0 1 1 1v0a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M6 6H5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1" stroke="currentColor" stroke-width="1.5"/><path d="m8 13 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="tt">Permit to work<span class="sub">Fill · review · print</span></span>
+    </button>
+    <button class="tool-btn" id="docsBtn">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 3v4h4M9 12h6M9 16h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tt">Documents<span class="sub">Templates · print / download</span></span>
+    </button>
+    <button class="tool-btn" id="plansBtn">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tt">Plans &amp; support<span class="sub">Organizations · NGOs · service</span></span>
     </button>
 
     <div class="side-label">Tools</div>
@@ -436,6 +503,37 @@
         <button class="pbtn primary" id="permitReview"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Review with Guardian</button>
       </div>
     </div>
+
+    <!-- Daily dashboard view -->
+    <div id="dailyView" class="view" style="display:none">
+      <div class="permit-scroll">
+        <div class="permit">
+          <div class="kpi-grid" id="kpiGrid"></div>
+          <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--accent)"></span>14-day trend <span id="trendLbl" style="font-weight:450;color:var(--text-3);font-size:12px;margin-left:4px"></span></h3>
+            <div id="trendChart"></div>
+          </div>
+          <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--r-med)"></span>Log a day</h3>
+            <div class="grid2">
+              <div class="fld"><label>Date</label><input id="d_date" type="date" /></div>
+              <div class="fld"><label>Remarks / highlights</label><input id="d_remarks" placeholder="Optional" /></div>
+            </div>
+            <div class="num-grid" id="numGrid"></div>
+          </div>
+          <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--r-low)"></span>Recent days</h3>
+            <div style="overflow-x:auto"><table class="mini-table" id="recentTable"></table></div>
+          </div>
+        </div>
+      </div>
+      <div class="pbar">
+        <span class="pleft" id="dailyMeta"></span>
+        <button class="pbtn" id="dailyDelete">Delete day</button>
+        <button class="pbtn" id="dailyPrint"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-2m-12 0v3h12v-3m-12 0h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Print report</button>
+        <button class="pbtn primary" id="dailySave"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Save day</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -459,8 +557,8 @@
 <!-- Settings modal -->
 <div class="overlay" id="overlay">
   <div class="modal set">
-    <h2>Model &amp; connection</h2>
-    <p class="m-sub">Guardian works fully offline out of the box. Connect Claude or any free / local LLM for full AI answers — everything runs in your browser and keys stay on this device.</p>
+    <h2>Choose your safety copilot</h2>
+    <p class="m-sub">Guardian works out of the box — and gets smarter with an AI agent behind it. Pick how you want to run it. Private by design: everything runs in your browser and keys stay on this device.</p>
     <div class="prov-tabs" id="provTabs"></div>
     <div id="provFields"></div>
     <div id="provTest" class="prov-test"></div>
@@ -475,6 +573,51 @@
     <p class="m-sub">Guardian tailors every answer — incident, near miss, first aid, compliance, and permit reviews — to the frameworks you pick here.</p>
     <div id="stdList"></div>
     <div class="m-actions"><button class="btn-save" id="doneStd" style="flex:1">Done</button></div>
+  </div>
+</div>
+
+<!-- Documents modal -->
+<div class="overlay" id="docsOverlay">
+  <div class="modal set" style="max-width:540px">
+    <h2>Document templates</h2>
+    <p class="m-sub">Ready-to-use EHS forms — <b>print</b> or <b>download</b>, fully offline and no AI needed. Fill them on paper or edit the downloaded file.</p>
+    <div id="docList"></div>
+    <div class="m-actions"><button class="btn-save" id="doneDocs" style="flex:1">Close</button></div>
+  </div>
+</div>
+
+<!-- Plans & support modal -->
+<div class="overlay" id="plansOverlay">
+  <div class="modal set" style="max-width:560px">
+    <h2>Guardian as a service</h2>
+    <p class="m-sub">Use Guardian free forever — or bring it to your organization as a managed EHS service, tailored to your sites, standards and reporting.</p>
+    <div class="plan-grid">
+      <div class="plan-card">
+        <div class="pt-top"><span class="pt-name">Community</span><span class="pt-badge b-free">Free</span></div>
+        <div class="pt-d">Individuals · students · small teams</div>
+        <ul class="pt-pts"><li>Everything in this app, forever free</li><li>Offline reference + your own AI keys</li><li>Standard & premium document templates</li></ul>
+      </div>
+      <div class="plan-card">
+        <div class="pt-top"><span class="pt-name">NGO</span><span class="pt-badge b-free">Free for nonprofits</span></div>
+        <div class="pt-d">NGOs · community & worker-safety programs</div>
+        <ul class="pt-pts"><li>Business-level setup at no cost</li><li>Templates adapted to your program</li><li>Onboarding help for field teams</li></ul>
+      </div>
+      <div class="plan-card">
+        <div class="pt-top"><span class="pt-name">Business</span><span class="pt-badge b-pro">Service</span></div>
+        <div class="pt-d">Sites · projects · contractors</div>
+        <ul class="pt-pts"><li>Branded permits, reports & registers for your site</li><li>Standards pack matched to your jurisdictions</li><li>Team onboarding + priority email support</li></ul>
+      </div>
+      <div class="plan-card">
+        <div class="pt-top"><span class="pt-name">Enterprise</span><span class="pt-badge b-pro">Custom</span></div>
+        <div class="pt-d">Multi-site organizations</div>
+        <ul class="pt-pts"><li>Multi-site rollout & document control</li><li>Custom workflows & KPI reporting</li><li>Dedicated support contact</li></ul>
+      </div>
+    </div>
+    <div class="support-card">
+      <div><b>Talk to the support team</b><span>Setup, tailoring, NGO access, or anything else — typically within 1–2 working days.</span></div>
+      <a class="pbtn primary" id="contactBtn" href="#">Contact support</a>
+    </div>
+    <div class="m-actions"><button class="btn-save" id="donePlans" style="flex:1">Close</button></div>
   </div>
 </div>
 
@@ -508,6 +651,13 @@ const state={
   busy:false
 };
 const PROVIDERS={offline:'Offline',anthropic:'Claude',openai:'Free LLM',ollama:'Ollama (local)'};
+const FREE_PRESETS=[
+  {name:'OpenRouter',base:'https://openrouter.ai/api/v1',model:'meta-llama/llama-3.3-70b-instruct:free',keyUrl:'https://openrouter.ai/keys'},
+  {name:'Groq',base:'https://api.groq.com/openai/v1',model:'llama-3.3-70b-versatile',keyUrl:'https://console.groq.com/keys'},
+  {name:'Gemini',base:'https://generativelanguage.googleapis.com/v1beta/openai',model:'gemini-2.0-flash',keyUrl:'https://aistudio.google.com/apikey'},
+  {name:'Cerebras',base:'https://api.cerebras.ai/v1',model:'llama-3.3-70b',keyUrl:'https://cloud.cerebras.ai/'},
+  {name:'Mistral',base:'https://api.mistral.ai/v1',model:'mistral-small-latest',keyUrl:'https://console.mistral.ai/api-keys/'}
+];
 function isOffline(){return state.offline||state.provider==='offline';}
 function activeModel(){const c=state.cfg[state.provider];return c?c.model:'reference';}
 function providerLabel(){return PROVIDERS[state.provider]||'Offline';}
@@ -624,13 +774,19 @@ function setView(v){
   state.view=v;
   $('#chatView').style.display=v==='chat'?'flex':'none';
   $('#permitView').style.display=v==='permit'?'flex':'none';
+  $('#dailyView').style.display=v==='daily'?'flex':'none';
+  $('#permitNav').classList.toggle('active',v==='permit');
+  $('#dailyNav').classList.toggle('active',v==='daily');
   if(v==='permit'){
-    $('#permitNav').classList.add('active');
     document.querySelectorAll('#modes .mode').forEach(x=>x.classList.remove('active'));
     $('#ctxTitle').textContent='Permit to work';
     $('#ctxSub').textContent='Fill the PTW, review it with Guardian, then print.';
+  }else if(v==='daily'){
+    document.querySelectorAll('#modes .mode').forEach(x=>x.classList.remove('active'));
+    $('#ctxTitle').textContent='Daily dashboard';
+    $('#ctxSub').textContent='Log today\'s EHS activities — see daily vs cumulative at a glance.';
+    renderDaily();
   }else{
-    $('#permitNav').classList.remove('active');
     renderModes();renderCtx();
   }
 }
@@ -779,10 +935,155 @@ function buildPrint(){
     <div class="sigs"><div>Permit Holder</div><div>Safety In-charge</div><div>Approved (Project Manager)</div><div>Security In-charge</div></div>
   </div>`;
 }
-$('#permitReview').onclick=()=>{setView('chat');closeNav();runTurn('Please review this Permit to Work.\n\n'+serializePermit(),PERMIT_FOCUS);};
+function reviewPermitOffline(){
+  const p=state.permit,h=p.header,secs=activeSections();
+  let total=0;const unanswered=[],failed=[];
+  secs.forEach(sec=>PERMIT_CHECKS[sec].items.forEach((it,i)=>{
+    total++;const v=p.checks[sec+'.'+i];
+    if(!v)unanswered.push(it);else if(v==='N')failed.push(it);
+  }));
+  const on=n=>!!p.ppe[n];const ppeGaps=[];
+  if(!on('Safety helmet'))ppeGaps.push('Safety helmet not selected');
+  if(!on('Safety shoes / gum boots'))ppeGaps.push('Safety shoes / boots not selected');
+  if(p.types.height&&!on('Full-body harness'))ppeGaps.push('Work at height selected — full-body harness not selected');
+  if(p.types.hot&&!on('Safety goggles / face shield'))ppeGaps.push('Hot work selected — eye / face protection not selected');
+  const missing=[];
+  if(!h.permitNo)missing.push('permit number');
+  if(!h.validUpto)missing.push('validity');
+  if(!h.location)missing.push('location');
+  if(!(h.description||'').trim())missing.push('description of work');
+  let verdict;
+  if(failed.length)verdict='DO NOT AUTHORISE';
+  else if(unanswered.length||ppeGaps.length||missing.length)verdict='AUTHORISE WITH CONDITIONS';
+  else verdict='AUTHORISE';
+  const md=['**Permit review — '+verdict+'**',
+    '_Rule-based check (no AI). '+total+' checks across '+secs.map(s=>PERMIT_CHECKS[s].title).join(', ')+'._'];
+  if(failed.length){md.push('','**Blockers — marked “No”, resolve before issue:**');failed.forEach(f=>md.push('- '+f));}
+  if(unanswered.length){md.push('','**Unanswered checks ('+unanswered.length+'):**');unanswered.slice(0,12).forEach(f=>md.push('- '+f));if(unanswered.length>12)md.push('- …and '+(unanswered.length-12)+' more');}
+  if(ppeGaps.length){md.push('','**PPE gaps:**');ppeGaps.forEach(f=>md.push('- '+f));}
+  if(missing.length){md.push('','**Missing permit details:** '+missing.join(', ')+'.');}
+  if(verdict==='AUTHORISE')md.push('','All active checks answered **Yes** with PPE and details in place. Confirm conditions on site, then authorise per your procedure.');
+  else if(verdict==='AUTHORISE WITH CONDITIONS')md.push('','Close the items above, then re-check before issuing the permit.');
+  else md.push('','A control is marked **No** — do not start work until every blocker is cleared and re-verified.');
+  md.push('','_Rule-based reference — verify against your site procedure and the applicable standard._');
+  const full=md.join('\n');
+  setView('chat');
+  if(state.messages.length===0)thread.innerHTML='';
+  const q='Review this Permit to Work (offline).';
+  state.messages.push({role:'user',content:q});addMsg('user',q);
+  addMsg('assistant',full);state.messages.push({role:'assistant',content:full});persist();
+  scroll.scrollTop=scroll.scrollHeight;refreshLogo();
+}
+$('#permitReview').onclick=()=>{closeNav();if(isOffline()){reviewPermitOffline();}else{setView('chat');runTurn('Please review this Permit to Work.\n\n'+serializePermit(),PERMIT_FOCUS);}};
 $('#permitPrint').onclick=()=>{$('#printArea').innerHTML=buildPrint();window.print();};
 $('#permitReset').onclick=()=>{if(!confirm('Clear this permit?'))return;state.permit=defaultPermit();persistPermit();bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();};
 $('#permitNav').onclick=()=>{setView('permit');closeNav();};
+$('#dailyNav').onclick=()=>{setView('daily');closeNav();};
+
+/* ---- daily EHS dashboard ---- */
+const DAILY_METRICS=[
+  {id:'manpower',l:'Manpower on site',cum:false},
+  {id:'manhours',l:'Man-hours',cum:true},
+  {id:'inductions',l:'Inductions',cum:true},
+  {id:'tbt',l:'Toolbox talks',cum:true},
+  {id:'trainings',l:'Trainings',cum:true},
+  {id:'audits',l:'Audits',cum:true},
+  {id:'inspections',l:'Inspections',cum:true},
+  {id:'sitewalks',l:'Site walks',cum:true},
+  {id:'quality',l:'Quality reports',cum:true},
+  {id:'obsRaised',l:'Observations raised',cum:true},
+  {id:'obsClosed',l:'Observations closed',cum:true},
+  {id:'nearmiss',l:'Near misses',cum:true},
+  {id:'firstaid',l:'First-aid cases',cum:true},
+  {id:'permits',l:'Permits issued',cum:true}
+];
+state.daily=JSON.parse(store.get('guardian.daily')||'{}');
+function persistDaily(){store.set('guardian.daily',JSON.stringify(state.daily))}
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function dailyCum(){const c={};DAILY_METRICS.forEach(m=>c[m.id]=0);let days=0;
+  Object.values(state.daily).forEach(e=>{days++;DAILY_METRICS.forEach(m=>c[m.id]+=(+e[m.id]||0));});
+  return {c,days};}
+function fmt(n){return (+n||0).toLocaleString('en-IN')}
+function renderKpis(){
+  const g=$('#kpiGrid');g.innerHTML='';
+  const sel=$('#d_date').value||todayISO();const e=state.daily[sel]||{};
+  const {c,days}=dailyCum();
+  const tiles=[
+    {v:fmt(e.manhours),l:'Man-hours · '+sel.slice(5),c:'Cumulative '+fmt(c.manhours)},
+    {v:fmt(e.manpower),l:'Manpower on site',c:days+' days logged'},
+    {v:fmt((+e.audits||0)+(+e.inspections||0)+(+e.sitewalks||0)),l:'Audits + inspections + walks',c:'Cumulative '+fmt(c.audits+c.inspections+c.sitewalks)},
+    {v:fmt(e.tbt),l:'Toolbox talks',c:'Cumulative '+fmt(c.tbt)},
+    {v:fmt(e.quality),l:'Quality reports',c:'Cumulative '+fmt(c.quality)},
+    {v:fmt(e.obsRaised),l:'Observations raised',c:'Closed to date '+fmt(c.obsClosed)+' / '+fmt(c.obsRaised)},
+    {v:fmt(e.nearmiss),l:'Near misses',c:'Cumulative '+fmt(c.nearmiss)},
+    {v:fmt(e.firstaid),l:'First-aid cases',c:'Cumulative '+fmt(c.firstaid)}
+  ];
+  tiles.forEach(t=>{const d=document.createElement('div');d.className='kpi';
+    d.innerHTML='<div class="kv">'+t.v+'</div><div class="kl">'+t.l+'</div><div class="kc">'+t.c+'</div>';g.appendChild(d);});
+}
+function lastNDates(n){const out=[];const d=new Date($('#d_date').value||todayISO());
+  for(let i=n-1;i>=0;i--){const x=new Date(d);x.setDate(d.getDate()-i);out.push(x.toISOString().slice(0,10));}return out;}
+function renderTrend(){
+  const dates=lastNDates(14);
+  const vals=dates.map(dt=>{const e=state.daily[dt]||{};return (+e.audits||0)+(+e.inspections||0)+(+e.sitewalks||0)+(+e.quality||0)+(+e.tbt||0);});
+  const max=Math.max(1,...vals);
+  $('#trendLbl').textContent='— activities per day (TBT + audits + inspections + walks + quality)';
+  const bars='<div class="bar-row">'+dates.map((dt,i)=>'<div class="bar'+(vals[i]?'':' zero')+'" style="height:'+Math.max(3,Math.round(vals[i]/max*80))+'px" title="'+dt+': '+vals[i]+'"></div>').join('')+'</div>'
+    +'<div class="bar-lbls">'+dates.map(dt=>'<span>'+dt.slice(8)+'</span>').join('')+'</div>';
+  $('#trendChart').innerHTML=bars;
+}
+function renderNumGrid(){
+  const g=$('#numGrid');g.innerHTML='';
+  const sel=$('#d_date').value||todayISO();const e=state.daily[sel]||{};
+  DAILY_METRICS.forEach(m=>{
+    const w=document.createElement('div');w.className='fld';
+    w.innerHTML='<label>'+m.l+'</label><input id="dm_'+m.id+'" type="number" min="0" inputmode="numeric" placeholder="0" value="'+(e[m.id]!=null?e[m.id]:'')+'">';
+    g.appendChild(w);
+  });
+  $('#d_remarks').value=e.remarks||'';
+}
+function renderRecent(){
+  const t=$('#recentTable');
+  const dates=Object.keys(state.daily).sort().reverse().slice(0,7);
+  if(!dates.length){t.innerHTML='<tr><td style="text-align:left;color:var(--text-3)">No days logged yet — fill the form and hit Save day.</td></tr>';return;}
+  const cols=['manhours','tbt','audits','inspections','sitewalks','quality','obsRaised','nearmiss'];
+  const heads={manhours:'Man-hrs',tbt:'TBT',audits:'Aud',inspections:'Insp',sitewalks:'Walks',quality:'Qlty',obsRaised:'Obs',nearmiss:'NM'};
+  t.innerHTML='<tr><th>Date</th>'+cols.map(c=>'<th>'+heads[c]+'</th>').join('')+'</tr>'
+    +dates.map(dt=>{const e=state.daily[dt];return '<tr data-d="'+dt+'"><td>'+dt+'</td>'+cols.map(c=>'<td>'+fmt(e[c])+'</td>').join('')+'</tr>';}).join('');
+  t.querySelectorAll('tr[data-d]').forEach(r=>r.onclick=()=>{$('#d_date').value=r.dataset.d;renderDaily();});
+}
+function updateDailyMeta(){
+  const sel=$('#d_date').value||todayISO();
+  const {days}=dailyCum();
+  $('#dailyMeta').textContent=(state.daily[sel]?'Editing saved day '+sel:'New entry for '+sel)+' · '+days+' days in register';
+}
+function renderDaily(){
+  if(!$('#d_date').value)$('#d_date').value=todayISO();
+  renderKpis();renderTrend();renderNumGrid();renderRecent();updateDailyMeta();
+}
+$('#d_date').onchange=renderDaily;
+$('#dailySave').onclick=()=>{
+  const sel=$('#d_date').value||todayISO();const e={};
+  DAILY_METRICS.forEach(m=>{const v=$('#dm_'+m.id).value;if(v!=='')e[m.id]=+v;});
+  const rm=$('#d_remarks').value.trim();if(rm)e.remarks=rm;
+  state.daily[sel]=e;persistDaily();renderDaily();
+};
+$('#dailyDelete').onclick=()=>{
+  const sel=$('#d_date').value;if(!sel||!state.daily[sel])return;
+  if(!confirm('Delete the entry for '+sel+'?'))return;
+  delete state.daily[sel];persistDaily();renderDaily();
+};
+function dailyDoc(){
+  const sel=$('#d_date').value||todayISO();const e=state.daily[sel]||{};const {c,days}=dailyCum();
+  return '<div class="print-doc">'+docHead('Daily EHS Report','Date: '+sel)
+    +'<table class="pt"><tbody><tr><td><strong>Indicator</strong></td><td><strong>Today</strong></td><td><strong>Cumulative ('+days+' days)</strong></td></tr>'
+    +DAILY_METRICS.map(m=>'<tr><td>'+m.l+'</td><td class="a">'+fmt(e[m.id])+'</td><td class="a">'+(m.cum?fmt(c[m.id]):'—')+'</td></tr>').join('')
+    +'</tbody></table>'
+    +'<h4>Remarks / highlights</h4><table class="pt"><tbody><tr><td style="height:44px">'+esc(e.remarks||'')+'</td></tr></tbody></table>'
+    +'<div class="sigs"><div>Prepared by (EHS)</div><div>Project Lead</div><div>Client / PMC</div><div>Date</div></div></div>';
+}
+$('#dailyPrint').onclick=()=>{$('#printArea').innerHTML=dailyDoc();window.print();};
+
 
 /* ---- risk matrix ---- */
 function riskLevel(s){if(s<=4)return{name:'Low',color:'#15A34A'};if(s<=9)return{name:'Medium',color:'#D68A00'};if(s<=14)return{name:'High',color:'#E2622A'};return{name:'Critical',color:'#DC2626'}}
@@ -931,12 +1232,36 @@ const OFFLINE_KB=[
   {k:['osha'],a:'**USA OSHA** — the **General Duty Clause** requires a workplace free of recognised serious hazards; specific standards are in **29 CFR 1910** (general industry) and **1926** (construction). Recordables go on the **OSHA 300** log.'},
   {k:['bocw'],a:'**India — BOCW Act 1996** covers construction workers: establishment/worker registration, safety & welfare (water, latrines, first aid, canteens), safety committees & safety officers on larger sites, and hazard rules (height, excavation, lifting), with the state BOCW Rules.'},
   {k:['iogp','life-saving'],a:'**IOGP** (oil & gas) publishes the **Life-Saving Rules** (work authorisation, bypassing controls, confined space, energy isolation, driving, line of fire, working at height, hot work) and standard **near-miss/safety-performance** reporting. Align permits & reporting to these.'},
-  {k:['factories act'],a:'**India — Factories Act 1948** covers health, safety & welfare: hazardous-process controls, machine guarding, first-aid provision (boxes per ~150; ambulance room >500), safety officers (usually ≥1,000 workers or hazardous process), and occupier duties, detailed by the state Factories Rules.'}
+  {k:['factories act'],a:'**India — Factories Act 1948** covers health, safety & welfare: hazardous-process controls, machine guarding, first-aid provision (boxes per ~150; ambulance room >500), safety officers (usually ≥1,000 workers or hazardous process), and occupier duties, detailed by the state Factories Rules.'},
+  {t:'Lockout/Tagout',k:['loto','lockout','tagout','energy isolation','isolate energy'],a:'**Lockout/Tagout (LOTO)**\n1. Identify all energy sources (electrical, hydraulic, pneumatic, stored, gravity).\n2. Notify, shut down, isolate, then **lock and tag** each source — one lock per worker.\n3. Release/dissipate stored energy; **verify zero energy** by testing before work.\n4. Reverse only when clear, by the person who applied the lock.'},
+  {t:'Work at height',k:['work at height','working at height','fall protection','fall arrest'],a:'**Work at height — controls (in order)**\n1. Avoid working at height where possible.\n2. Prevent falls — guard rails, platforms, MEWPs.\n3. Minimise distance/consequence — nets, restraint.\n4. Personal fall arrest (full-body harness + anchorage + rescue plan) is last.\nInspect gear, protect openings/edges, exclude the zone below.'},
+  {t:'Scaffolding',k:['scaffold','scaffolding'],a:'**Scaffolding — key checks**\nErected/altered/dismantled by competent persons · sound base & footings · full boards, guard rails & toe boards · safe access · **scafftag** green before use, inspected ≥ every 7 days and after alteration or bad weather · rated for the load.'},
+  {t:'Excavation',k:['excavation','trench','trenching','digging'],a:'**Excavation / trenching**\nLocate & isolate buried services first · prevent collapse (batter, bench, or shore/trench box per depth & soil) · keep spoil and plant back from the edge · safe access/egress · edge protection & barriers · test atmosphere in deep excavations · daily competent-person inspection.'},
+  {t:'Manual handling',k:['manual handling','ergonomic','back injury','carrying','lifting weight'],a:'**Manual handling**\nAssess **T**ask / **I**ndividual / **L**oad / **E**nvironment. Eliminate or mechanise where possible (trolleys, hoists). Technique: stable base, bend knees, load close, no twisting. No universal safe weight — reduce with team lifts, smaller loads, better layout.'},
+  {t:'Ladders',k:['ladder'],a:'**Ladder safety**\nRight ladder, good condition (inspect first) · secure/foot it at ~75° (1:4) · extend ≥1 m above a landing · 3 points of contact · light, short-duration work only · don\'t overreach or use near live electrics.'},
+  {t:'Electrical safety',k:['electrical','electricity','live wire','rccb','elcb'],a:'**Electrical safety**\nWork dead where possible (isolate, lock off, prove dead). Use RCD/RCCB/ELCB protection, PAT-tested leads, correct IP-rated gear, no damaged cables. Only competent/authorised persons work on electrical systems; keep clear of overhead/buried lines.'},
+  {t:'Fire extinguishers',k:['fire extinguisher','extinguisher','which extinguisher'],a:'**Fire extinguisher types**\n- **Water** — wood/paper/textiles (A); not electrics/liquids.\n- **Foam** — A & flammable liquids (B).\n- **CO₂** — electrical & liquids; no residue.\n- **Dry powder** — multi-purpose A/B/C & electrical.\n- **Wet chemical** — cooking oils/fats (F/K).\nRaise the alarm first; only tackle small fires.'},
+  {t:'Spill response',k:['spill','chemical release','spillage','leak'],a:'**Chemical spill response**\n1. Raise the alarm, evacuate if needed; don\'t touch unknowns.\n2. Correct PPE; check the **SDS**.\n3. Contain (booms/bunding); stop the source if safe.\n4. Absorb with the right spill kit; bag as hazardous waste; ventilate.\n5. Report; keep it out of drains/watercourses.'},
+  {t:'JSA / HIRA',k:['jsa','job safety analysis','hira','job hazard'],a:'**JSA / HIRA steps**\n1. Break the job into steps.\n2. Identify hazards at each step.\n3. Assess risk (Likelihood × Severity, 5×5).\n4. Add controls in **hierarchy** order; re-score residual risk.\n5. Assign owners, brief (TBT), review on change.\nBuild one in the **Risk assessment** workspace.'},
+  {t:'Toolbox talk',k:['toolbox talk','tbt','tool box talk','safety briefing'],a:'**Toolbox talk — 5-min structure**\n1. Topic & why it matters today.\n2. Key hazards of the task.\n3. Controls & safe method.\n4. PPE & emergency arrangements.\n5. Questions + attendance sign-off.\nKeep it specific to today\'s job and site.'},
+  {t:'Incident classes',k:['recordable','lost time','ltifr','injury classification','first aid case','medical treatment','classify injury'],a:'**Injury classification**\n- **First-aid case** — first aid only.\n- **Medical treatment (MTC)** — beyond first aid.\n- **Restricted work (RWC)** — off normal duties.\n- **Lost-time injury (LTI)** — away ≥1 shift.\n- **Fatality**.\nOSHA "recordable" = MTC/RWC/LTI, loss of consciousness, or significant diagnosis (OSHA 300). Rates: TRIR, LTIFR.'},
+  {t:'Hazardous substances',k:['sds','msds','coshh','hazardous substance','chemical safety'],a:'**Hazardous substances (SDS / COSHH)**\nKeep an up-to-date **SDS** per chemical; assess exposure; control by substitution, LEV/ventilation, then PPE (gloves/RPE per SDS). Label & store by compatibility, provide eye wash/spill kit, train users, and run health surveillance where required.'},
+  {t:'Environment',k:['environment','waste','effluent','emission','aspects','iso 14001','14001'],a:'**Environmental basics (ISO 14001)**\nIdentify environmental **aspects & impacts**; control waste (segregate, licensed disposal, manifests), spills to drains, emissions and noise. Keep the legal register and permits current. ISO 14001 uses the same Plan-Do-Check-Act cycle as ISO 45001.'},
+  {t:'CPR & choking',k:['cpr','not breathing','cardiac arrest','choking','unconscious'],a:'**CPR & choking (trained responders)**\n- **Unresponsive, not breathing:** call emergency services, start CPR — 30 compressions (~5–6 cm, 100–120/min) to 2 breaths; use an AED asap.\n- **Choking (severe):** 5 back blows, then 5 abdominal thrusts; repeat; call for help.\nUse a trained first-aider — this is a reminder, not training.'},
+  {t:'Lifting ops',k:['lifting','crane','sling','rigging','hoist'],a:'**Lifting operations**\nPlan the lift (competent person) · certified, in-date equipment within SWL · trained slinger/signaller & operator · exclusion zone, no one under the load · check ground/outriggers & weather · tag lines to control the load.'},
+  {t:'EU OSH',k:['eu-osha','89/391','framework directive','european'],a:'**Europe — OSH framework**\nDirective **89/391/EEC** sets employer duties: risk assessment, prevention principles (avoid, evaluate, combat at source), information, consultation & training, plus daughter directives (workplaces, PPE, manual handling, height, chemical agents). States transpose into national law.'},
+  {t:'GCC OSH',k:['gcc','uae','saudi','qatar','oman','gulf'],a:'**GCC — OSH essentials**\nEach Gulf state has its own regime (e.g. UAE MOHRE/federal OSH, Saudi regulations & summer midday-work ban, Qatar summer working-hours rules). Common themes: risk assessment, PPE, heat-stress controls, contractor management. Check the specific country and client HSE standard.'},
+  {t:'ONGC',k:['ongc'],a:'**ONGC (India, oil & gas)** applies a corporate HSE management system aligned to ISO 45001/14001 and **OISD** standards, with permit-to-work, contractor safety and incident reporting. Follow the site HSE plan and OISD guidance for the installation.'}
 ];
+const OFFLINE_MENU='**Offline assist** — built-in EHS reference, no connection needed. Ask about:\n- **First aid:** kit, first-aider numbers, bleeding, burns, eye splash, shock, fractures, heat, CPR/choking\n- **Assessments:** risk 5×5, hierarchy of controls, JSA/HIRA, near miss & HiPo\n- **High-risk work:** permit to work, work at height, scaffolding, excavation, confined space, hot work, LOTO, electrical, lifting, ladders\n- **Also:** PPE, manual handling, SDS/COSHH, fire extinguishers, spill response, incident classification, environment, emergency numbers\n- **Standards:** ISO 45001/14001, OSHA, Factories Act, BOCW, EU 89/391, GCC, IOGP, ONGC\nOr use the **Risk matrix** and **Permit to work** tools — they work fully offline.\n\n_Connect Claude or a free / local LLM in Settings for full AI answers._';
 function offlineAnswer(q){
   const s=(q||'').toLowerCase();
-  for(const e of OFFLINE_KB){if(e.k.some(k=>s.includes(k)))return e.a+'\n\n_Offline reference — verify against the current regulation and your site procedures._';}
-  return '**Offline assist** is answering from built-in EHS references because Claude isn\'t reachable. Right now I can help with:\n- First aid — kit contents, first-aider numbers, first response (bleeding, burns, eye splash, shock)\n- Near miss — report template & HiPo\n- Risk — 5×5 scoring & hierarchy of controls\n- Permit to work, hot work, confined space essentials\n- Standards — ISO 45001, OSHA, Factories Act, BOCW, IOGP · Emergency numbers\nAsk about any of these, or use the sidebar tools (Risk matrix, Permit to work) — they work fully offline.\n\n_Connect an API key in Settings for full AI answers._';
+  const scored=OFFLINE_KB.map(e=>{let sc=0;for(const k of e.k){if(s.includes(k))sc+=k.length+2;}return {e,sc};}).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);
+  if(!scored.length)return OFFLINE_MENU;
+  const best=scored[0].e;
+  const rel=scored.slice(1,3).map(x=>x.e.t||x.e.k[0]).filter(Boolean);
+  const relTxt=rel.length?'\n\n_Related: '+rel.join(' · ')+'._':'';
+  return best.a+relTxt+'\n\n_Offline reference — verify against the current regulation and your site procedures._';
 }
 function respondOffline(text,reason){
   if(state.messages.length===0)thread.innerHTML='';
@@ -971,17 +1296,23 @@ function persist(){store.set('guardian.msgs',JSON.stringify(state.messages))}
 /* settings — provider picker */
 let setProv='offline';
 const PROV_META={
-  offline:{t:'Offline',d:'Built-in reference · no setup',i:'var(--r-med)'},
-  anthropic:{t:'Claude',d:'Anthropic · most capable',i:'var(--accent)'},
-  openai:{t:'Free LLM',d:'OpenRouter / Groq / any OpenAI-compatible',i:'var(--mandatory,#1F6FB2)'},
-  ollama:{t:'Ollama',d:'Local model · free & private',i:'var(--r-low)'}
+  offline:{t:'Starter',sub:'Offline reference',badge:'Included',bcls:'b-inc',i:'var(--r-med)',
+    pts:['Instant answers on 40 EHS topics','Rule-based permit review & documents','No setup · no account · fully private']},
+  anthropic:{t:'Claude Agent',sub:'Powered by Anthropic',badge:'Most capable',bcls:'b-pro',i:'var(--accent)',
+    pts:['Deep, site-specific reasoning','Full permit audits with cited standards','Best answers for complex questions']},
+  openai:{t:'Free Agent',sub:'OpenRouter · Groq · Gemini & more',badge:'Free',bcls:'b-free',i:'var(--mandatory,#1F6FB2)',
+    pts:['Real AI answers at zero cost','One-tap presets, bring a free key','Works with any OpenAI-compatible API']},
+  ollama:{t:'Private Agent',sub:'Ollama on your machine',badge:'Free & offline',bcls:'b-free',i:'var(--r-low)',
+    pts:['Runs 100% on your own hardware','No data ever leaves your device','AI even with no internet']}
 };
 function renderProvTabs(){
   const w=$('#provTabs');w.innerHTML='';
   Object.keys(PROV_META).forEach(id=>{
     const m=PROV_META[id];const b=document.createElement('button');
     b.className='prov-tab'+(id===setProv?' on':'');
-    b.innerHTML=`<div class="pt-t"><span class="pt-i" style="background:${m.i}"></span>${m.t}</div><div class="pt-d">${m.d}</div>`;
+    b.innerHTML=`<div class="pt-top"><span class="pt-i" style="background:${m.i}"></span><span class="pt-name">${m.t}</span><span class="pt-badge ${m.bcls}">${m.badge}</span></div>
+      <div class="pt-d">${m.sub}</div>
+      <ul class="pt-pts">${m.pts.map(p=>`<li>${p}</li>`).join('')}</ul>`;
     b.onclick=()=>{setProv=id;renderProvTabs();renderProvFields();};
     w.appendChild(b);
   });
@@ -991,16 +1322,24 @@ function renderProvFields(){
   const t=$('#provTest');if(t){t.className='prov-test';t.textContent='';}
   const box=$('#provFields');const c=state.cfg;
   if(setProv==='offline'){
-    box.innerHTML=`<div class="prov-note">No setup needed. Guardian answers from a built-in EHS reference library (first aid, near miss, permits, standards, emergency numbers) — fully private and available with no connection. The risk matrix and permit tools also work offline.</div>`;
+    box.innerHTML=`<div class="prov-note"><b>Starter</b> is ready the moment the page loads — but support is <b>limited</b>: no AI, just a fixed reference library. Short pre-written answers on common EHS topics (for example permit to work, first aid, near miss, risk scoring, emergency numbers), a rule-based permit review, and printable document templates. For open-ended or site-specific questions, upgrade to an agent — Claude, a free model, or private Ollama.</div>`;
   }else if(setProv==='anthropic'){
     box.innerHTML=fld('Anthropic API key','f_akey',c.anthropic.key,'sk-ant-…','pw')
       +fld('Model','f_amodel',c.anthropic.model,'claude-sonnet-5')
       +`<div class="prov-note">Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Models at <a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">docs.claude.com/models</a>. Charges apply to your account.</div>`;
   }else if(setProv==='openai'){
-    box.innerHTML=fld('Base URL','f_obase',c.openai.baseUrl,'https://openrouter.ai/api/v1')
-      +fld('API key','f_okey',c.openai.key,'leave blank for local servers','pw')
+    box.innerHTML='<div class="pset-lbl">Quick-connect a free chat model</div><div class="preset-row" id="presetRow"></div>'
+      +fld('Base URL','f_obase',c.openai.baseUrl,'https://openrouter.ai/api/v1')
+      +fld('API key','f_okey',c.openai.key,'paste your free key','pw')
       +fld('Model','f_omodel',c.openai.model,'meta-llama/llama-3.3-70b-instruct:free')
-      +`<div class="prov-note">Works with any OpenAI-compatible API. <b>Free options:</b> <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a> (has <code>:free</code> models) and <a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq</a> (base <code>https://api.groq.com/openai/v1</code>). Also LM Studio / vLLM local servers. If a provider blocks browser calls (CORS), OpenRouter is the most reliable from a static site.</div>`;
+      +`<div class="prov-note">Pick a provider above (fills the URL & a model — get a free key from its link), or enter any OpenAI-compatible endpoint. <b>OpenRouter</b> works most reliably from a static site; some providers block direct browser calls (CORS) — if so, use OpenRouter or local <b>Ollama</b>. Use <b>Test connection</b> to check.</div>`;
+    const row=$('#presetRow');
+    FREE_PRESETS.forEach(p=>{
+      const b=document.createElement('button');b.type='button';b.className='pset';b.textContent=p.name;
+      b.title=p.base;
+      b.onclick=()=>{$('#f_obase').value=p.base;$('#f_omodel').value=p.model;const t=$('#provTest');if(t){t.className='prov-test';t.textContent='';}window.open(p.keyUrl,'_blank','noopener');$('#f_okey').focus();};
+      row.appendChild(b);
+    });
   }else{
     box.innerHTML=fld('Base URL','f_lbase',c.ollama.baseUrl,'http://localhost:11434/v1')
       +fld('Model','f_lmodel',c.ollama.model,'llama3.1')
@@ -1070,6 +1409,132 @@ $('#standardsBtn').onclick=()=>{closeNav();renderStdList();$('#stdOverlay').clas
 $('#doneStd').onclick=closeStd;
 $('#stdOverlay').onclick=e=>{if(e.target===$('#stdOverlay'))closeStd()};
 
+/* ---- offline document templates ---- */
+const R=(row,n)=>row.repeat(n);
+function docHead(title,extra){return '<div class="ph"><h1>'+title+'</h1><div>'+(extra||'Ref: ______  Date: ______')+'</div></div>';}
+function jsaDoc(){return '<div class="print-doc">'+docHead('Job Safety Analysis (JSA / HIRA)')
+  +'<table class="pt"><tbody><tr><td>Task / activity</td><td colspan="3"></td></tr><tr><td>Location</td><td></td><td>Assessed by</td><td></td></tr></tbody></table>'
+  +'<h4>Hazard analysis — Risk = Likelihood × Severity (1–5)</h4>'
+  +'<table class="pt"><tbody><tr><td><strong>Step</strong></td><td><strong>Hazard</strong></td><td><strong>L</strong></td><td><strong>S</strong></td><td><strong>Risk</strong></td><td><strong>Controls (hierarchy of controls)</strong></td><td><strong>Residual</strong></td></tr>'
+  +R('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>',8)+'</tbody></table>'
+  +'<div class="sigs"><div>Assessed by</div><div>Reviewed by</div><div>Approved by</div><div>Date</div></div></div>';}
+function nearMissDoc(){return '<div class="print-doc">'+docHead('Near-miss / HiPo Report')
+  +'<table class="pt"><tbody><tr><td>Reported by</td><td></td><td>Date / time</td><td></td></tr><tr><td>Location</td><td></td><td>Activity</td><td></td></tr>'
+  +'<tr><td>What happened (potential outcome)</td><td colspan="3" style="height:44px"></td></tr>'
+  +'<tr><td>Potential worst-case severity (L×S)</td><td></td><td>High-Potential (HiPo)?</td><td>Yes / No</td></tr>'
+  +'<tr><td>Immediate cause</td><td colspan="3"></td></tr><tr><td>Underlying / root cause (5-Whys)</td><td colspan="3" style="height:44px"></td></tr></tbody></table>'
+  +'<h4>Corrective / preventive actions (hierarchy of controls)</h4>'
+  +'<table class="pt"><tbody><tr><td><strong>Action</strong></td><td><strong>Owner</strong></td><td><strong>Due</strong></td><td><strong>Done</strong></td></tr>'+R('<tr><td></td><td></td><td></td><td></td></tr>',4)+'</tbody></table>'
+  +'<div class="sigs"><div>Reported by</div><div>Reviewed by</div><div>Actions verified</div><div>Date</div></div></div>';}
+function incidentDoc(){return '<div class="print-doc">'+docHead('Incident Report')
+  +'<table class="pt"><tbody><tr><td>Injured / involved</td><td></td><td>Date / time</td><td></td></tr><tr><td>Location</td><td></td><td>Activity</td><td></td></tr>'
+  +'<tr><td>Description of incident</td><td colspan="3" style="height:52px"></td></tr>'
+  +'<tr><td>Classification</td><td colspan="3">First-aid / Medical treatment / Restricted work / Lost-time / Fatality (circle)</td></tr>'
+  +'<tr><td>Reportable to regulator?</td><td>Yes / No</td><td>Body notified</td><td></td></tr>'
+  +'<tr><td>Immediate actions / containment</td><td colspan="3" style="height:44px"></td></tr>'
+  +'<tr><td>Root cause (5-Whys)</td><td colspan="3" style="height:44px"></td></tr></tbody></table>'
+  +'<h4>Corrective actions</h4><table class="pt"><tbody><tr><td><strong>Action</strong></td><td><strong>Owner</strong></td><td><strong>Due</strong></td></tr>'+R('<tr><td></td><td></td><td></td></tr>',4)+'</tbody></table>'
+  +'<div class="sigs"><div>Prepared by</div><div>Supervisor</div><div>EHS</div><div>Date</div></div></div>';}
+function tbtDoc(){return '<div class="print-doc">'+docHead('Toolbox Talk Record')
+  +'<table class="pt"><tbody><tr><td>Topic</td><td colspan="3"></td></tr><tr><td>Presenter</td><td></td><td>Date / location</td><td></td></tr>'
+  +'<tr><td>Key hazards</td><td colspan="3" style="height:40px"></td></tr><tr><td>Controls / safe method</td><td colspan="3" style="height:40px"></td></tr><tr><td>PPE & emergency arrangements</td><td colspan="3"></td></tr></tbody></table>'
+  +'<h4>Attendance</h4><table class="pt"><tbody><tr><td><strong>#</strong></td><td><strong>Name</strong></td><td><strong>Company</strong></td><td><strong>Signature</strong></td></tr>'
+  +Array.from({length:8},(_,i)=>'<tr><td>'+(i+1)+'</td><td></td><td></td><td></td></tr>').join('')+'</tbody></table></div>';}
+function firstAidDoc(){const items=['Sterile dressings (assorted)','Gauze pads','Triangular bandages','Crepe / roller bandages','Adhesive plasters','Sterile eye pads','Disposable gloves','Antiseptic wipes','Burn gel / dressing','Saline eye wash','CPR face shield','Scissors & tweezers','Safety pins','First-aid guidance leaflet'];
+  return '<div class="print-doc">'+docHead('First-Aid Box Checklist','Box ref: ______  Checked: ______')
+  +'<table class="pt"><tbody><tr><td><strong>Item</strong></td><td><strong>Required</strong></td><td><strong>In stock</strong></td><td><strong>Restock?</strong></td></tr>'
+  +items.map(it=>'<tr><td>'+it+'</td><td></td><td></td><td></td></tr>').join('')+'</tbody></table>'
+  +'<p style="font-size:11px">Scale contents to headcount & risk (e.g. ANSI/ISEA Z308.1 Class A/B; Factories Act box per ~150 workers). Inspect monthly.</p>'
+  +'<div class="sigs"><div>Checked by</div><div>Signature</div><div>Next due</div><div>Date</div></div></div>';}
+function inspectionDoc(){const items=['Housekeeping & access clear','Walkways / stairs / edge protection','Fire extinguishers & exits','Electrical leads / DBs / RCDs','PPE available & worn','Machine guarding in place','Chemical storage & SDS','Waste segregation','First-aid provision','Emergency signage & assembly','Work-at-height equipment','Permits displayed & valid'];
+  return '<div class="print-doc">'+docHead('Safety Inspection Checklist','Area: ______  Date: ______')
+  +'<table class="pt"><tbody><tr><td><strong>Item</strong></td><td><strong>Y</strong></td><td><strong>N</strong></td><td><strong>N/A</strong></td><td><strong>Action / comment</strong></td></tr>'
+  +items.map(it=>'<tr><td>'+it+'</td><td></td><td></td><td></td><td></td></tr>').join('')+'</tbody></table>'
+  +'<div class="sigs"><div>Inspected by</div><div>Signature</div><div>Follow-up by</div><div>Date</div></div></div>';}
+const DOCS=[
+  {t:'Job Safety Analysis (JSA / HIRA)',d:'Hazard-by-step table with 5×5 scoring',f:jsaDoc},
+  {t:'Near-miss / HiPo report',d:'Capture, causes, corrective actions',f:nearMissDoc},
+  {t:'Incident report',d:'Details, classification, root cause, actions',f:incidentDoc},
+  {t:'Toolbox talk record',d:'Topic, hazards, controls, attendance',f:tbtDoc},
+  {t:'First-aid box checklist',d:'Contents & quantity check',f:firstAidDoc},
+  {t:'Safety inspection checklist',d:'Walkthrough with Y/N/NA',f:inspectionDoc}
+];
+/* ---- premium documents ---- */
+function kpiRows(items){return items.map(it=>'<tr><td>'+it+'</td><td></td><td></td></tr>').join('');}
+function closureDoc(){return '<div class="print-doc">'+docHead('Project EHS Closure & KPI Report','Project: ______  Phase: ______')
+  +'<h4>1 · Purpose</h4><p style="font-size:11px">Formal record of the project\'s EHS performance: achievements, KPIs, compliance, inspections & audits, training, incident statistics, initiatives and lessons learned — a reference for continuous improvement on future projects.</p>'
+  +'<h4>2 · Project overview & core team</h4><table class="pt"><tbody><tr><td>Client / project</td><td></td><td>Location</td><td></td></tr><tr><td>Duration</td><td></td><td>Scope</td><td></td></tr><tr><td>Core team & contacts</td><td colspan="3" style="height:52px"></td></tr><tr><td>Document control</td><td colspan="3"></td></tr></tbody></table>'
+  +'<h4>3 · EHS statistics</h4><table class="pt"><tbody><tr><td><strong>Indicator</strong></td><td><strong>Value</strong></td><td><strong>Remarks</strong></td></tr>'
+  +kpiRows(['Safe man-hours','Employees inducted','Toolbox talks (TBT) conducted','EHS trainings delivered','EHS initiatives / campaigns','Mock drills','First-aid cases','Medical treatment / restricted work cases','Lost-time injuries (LTI)','Near misses reported (incl. HiPo)'])+'</tbody></table>'
+  +'<h4>4 · EHS approach</h4><table class="pt"><tbody><tr><td><strong>Planning</strong> — expectations & standards set</td><td></td></tr><tr><td><strong>Initiating</strong> — facilities set up to the EHS expectation document</td><td></td></tr><tr><td><strong>Execution</strong> — EHS processes delivered on ground</td><td></td></tr><tr><td><strong>Control</strong> — monitoring & assurance of standards</td><td></td></tr></tbody></table>'
+  +'<h4>5 · Risk management</h4><table class="pt"><tbody><tr><td>HIRA / risk assessments (own & vendor)</td><td style="height:36px"></td></tr><tr><td>Permits issued (by type)</td><td></td></tr></tbody></table>'
+  +'<h4>6 · Compliance, inspections & audits</h4><table class="pt"><tbody><tr><td>Legal / client requirements & status</td><td style="height:36px"></td></tr><tr><td>Inspections & audits (count, findings, closure)</td><td style="height:36px"></td></tr></tbody></table>'
+  +'<h4>7 · Campaigns & weekly themes</h4><table class="pt"><tbody><tr><td>Themes run (e.g. road safety, work at height, material handling, welfare, mental health, BBS, National Safety Month)</td><td style="height:44px"></td></tr></tbody></table>'
+  +'<h4>8 · Incidents & lessons learned</h4><table class="pt"><tbody><tr><td>Incident summary</td><td style="height:36px"></td></tr><tr><td>Key lessons & best practices to carry forward</td><td style="height:44px"></td></tr></tbody></table>'
+  +'<div class="sigs"><div>Prepared by (EHS)</div><div>Project Lead</div><div>Client / PMC</div><div>Date</div></div></div>';}
+function hsePlanDoc(){return '<div class="print-doc">'+docHead('Project HSE Plan')
+  +'<table class="pt"><tbody><tr><td>Project / client</td><td></td><td>Location</td><td></td></tr><tr><td>Scope of work</td><td colspan="3"></td></tr></tbody></table>'
+  +'<h4>Contents</h4><table class="pt"><tbody>'+['1 · Policy, objectives & KPI targets','2 · Organisation, roles & responsibilities','3 · Legal & client requirements (legal register)','4 · Risk management — HIRA, permits, high-risk activities','5 · Training, induction & toolbox talks','6 · Inspections, audits & reporting calendar','7 · Incident & near-miss management','8 · Emergency preparedness & first aid','9 · Welfare, health & environment (waste, dust, noise)','10 · Contractor & vendor HSE management'].map(s=>'<tr><td>'+s+'</td><td style="height:26px"></td></tr>').join('')+'</tbody></table>'
+  +'<div class="sigs"><div>Prepared by</div><div>Reviewed by</div><div>Approved by</div><div>Rev / date</div></div></div>';}
+function monthlyKpiDoc(){return '<div class="print-doc">'+docHead('Monthly EHS KPI Report','Month: ______  Site: ______')
+  +'<table class="pt"><tbody><tr><td><strong>Indicator</strong></td><td><strong>This month</strong></td><td><strong>Cumulative</strong></td></tr>'
+  +kpiRows(['Man-hours worked','Workers on site (peak / avg)','Inductions','TBT conducted','Trainings','Inspections & audits','Observations raised / closed','Near misses (incl. HiPo)','First-aid / MTC / RWC / LTI','Mock drills','Positive initiatives'])+'</tbody></table>'
+  +'<h4>Highlights & concerns</h4><table class="pt"><tbody><tr><td>Highlights</td><td style="height:36px"></td></tr><tr><td>Concerns / support needed</td><td style="height:36px"></td></tr><tr><td>Next month focus</td><td style="height:30px"></td></tr></tbody></table>'
+  +'<div class="sigs"><div>Prepared by (EHS)</div><div>Project Lead</div><div>Client</div><div>Date</div></div></div>';}
+function auditDoc(){return '<div class="print-doc">'+docHead('Internal EHS Audit Report','Audit ref: ______  Date: ______')
+  +'<table class="pt"><tbody><tr><td>Area / scope</td><td></td><td>Auditor(s)</td><td></td></tr><tr><td>Criteria (ISO 45001 / legal / client)</td><td colspan="3"></td></tr></tbody></table>'
+  +'<h4>Findings</h4><table class="pt"><tbody><tr><td><strong>#</strong></td><td><strong>Finding</strong></td><td><strong>NC / Obs / OFI</strong></td><td><strong>Clause / ref</strong></td><td><strong>Action & owner</strong></td><td><strong>Due</strong></td></tr>'+Array.from({length:6},(_,i)=>'<tr><td>'+(i+1)+'</td><td></td><td></td><td></td><td></td><td></td></tr>').join('')+'</tbody></table>'
+  +'<h4>Conclusion</h4><table class="pt"><tbody><tr><td>Overall assessment & good practices</td><td style="height:40px"></td></tr></tbody></table>'
+  +'<div class="sigs"><div>Lead auditor</div><div>Auditee</div><div>Follow-up by</div><div>Date</div></div></div>';}
+function erpDoc(){return '<div class="print-doc">'+docHead('Emergency Response Plan (site summary)')
+  +'<table class="pt"><tbody><tr><td>Site / project</td><td></td><td>Assembly point</td><td></td></tr><tr><td>Emergency coordinator</td><td></td><td>Deputy</td><td></td></tr><tr><td>Emergency numbers (fire / ambulance / police / client)</td><td colspan="3"></td></tr><tr><td>Nearest hospital & route</td><td colspan="3"></td></tr></tbody></table>'
+  +'<h4>Scenarios & response</h4><table class="pt"><tbody>'+['Fire','Medical emergency / serious injury','Structural / collapse','Chemical spill','Severe weather','Evacuation & roll call'].map(s=>'<tr><td>'+s+'</td><td style="height:28px"></td></tr>').join('')+'</tbody></table>'
+  +'<h4>Resources</h4><table class="pt"><tbody><tr><td>First aiders & fire wardens (names)</td><td style="height:30px"></td></tr><tr><td>Equipment (extinguishers, first-aid, rescue kit, alarm)</td><td style="height:30px"></td></tr><tr><td>Drill schedule</td><td></td></tr></tbody></table>'
+  +'<div class="sigs"><div>Prepared by</div><div>Approved by</div><div>Displayed at</div><div>Rev / date</div></div></div>';}
+const DOCS_PREMIUM=[
+  {t:'Project EHS Closure & KPI report',d:'Full project handover: KPIs, approach, audits, lessons learned',f:closureDoc},
+  {t:'Project HSE plan',d:'10-section plan skeleton for project start-up',f:hsePlanDoc},
+  {t:'Monthly EHS KPI report',d:'Month + cumulative indicators with highlights',f:monthlyKpiDoc},
+  {t:'Internal EHS audit report',d:'Findings register with NC/Obs/OFI and actions',f:auditDoc},
+  {t:'Emergency response plan',d:'Site summary: scenarios, resources, contacts',f:erpDoc}
+];
+function downloadDoc(name,body){
+  const css='<style>body{font-family:Inter,Arial,sans-serif;color:#111;margin:26px;max-width:820px}.print-doc h1{font-size:22px;margin:0}.ph{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:12px}h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 4px}table.pt{width:100%;border-collapse:collapse;font-size:11px}table.pt td{border:1px solid #999;padding:5px 7px;vertical-align:top}.sigs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:30px}.sigs div{border-top:1px solid #000;padding-top:6px;font-size:10px;text-align:center}</style>';
+  const html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+name+'</title>'+css+'</head><body>'+body+'</body></html>';
+  const blob=new Blob([html],{type:'text/html'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name.replace(/[^\w-]+/g,'_')+'.html';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function renderDocs(){
+  const box=$('#docList');box.innerHTML='';
+  const addRow=(d,premium)=>{
+    const row=document.createElement('div');row.className='doc-row';
+    row.innerHTML='<div class="doc-meta"><b>'+d.t+(premium?' <span class="prem-badge">Premium</span>':'')+'</b><span>'+d.d+'</span></div><div class="doc-acts"><button class="doc-btn" data-a="p">Print</button><button class="doc-btn" data-a="d">Download</button></div>';
+    row.querySelector('[data-a="p"]').onclick=()=>{$('#printArea').innerHTML=d.f();window.print();};
+    row.querySelector('[data-a="d"]').onclick=()=>downloadDoc(d.t,d.f());
+    box.appendChild(row);
+  };
+  const sec=t=>{const h=document.createElement('div');h.className='doc-sec';h.textContent=t;box.appendChild(h);};
+  sec('Standard — free forever');
+  DOCS.forEach(d=>addRow(d,false));
+  sec('Premium — professional project documents');
+  DOCS_PREMIUM.forEach(d=>addRow(d,true));
+  const note=document.createElement('div');note.className='doc-note';
+  note.innerHTML='Premium documents are included free while Guardian is in preview. For organizations that want them tailored to their sites — with setup, custom standards and support — see <b>Plans & support</b>.';
+  box.appendChild(note);
+}
+function closeDocs(){$('#docsOverlay').classList.remove('show')}
+$('#docsBtn').onclick=()=>{closeNav();renderDocs();$('#docsOverlay').classList.add('show')};
+$('#doneDocs').onclick=closeDocs;
+$('#docsOverlay').onclick=e=>{if(e.target===$('#docsOverlay'))closeDocs()};
+
+/* plans & support */
+const SUPPORT_EMAIL='CHANGE-ME@example.com'; /* ← set your contact email before deploying */
+function closePlans(){$('#plansOverlay').classList.remove('show')}
+$('#plansBtn').onclick=()=>{closeNav();$('#plansOverlay').classList.add('show')};
+$('#donePlans').onclick=closePlans;
+$('#plansOverlay').onclick=e=>{if(e.target===$('#plansOverlay'))closePlans()};
+$('#contactBtn').href='mailto:'+SUPPORT_EMAIL+'?subject='+encodeURIComponent('Guardian EHS — plans & support enquiry')+'&body='+encodeURIComponent('Hi,\n\nWe are interested in Guardian for our organization.\n\nOrganization:\nPlan of interest (Business / NGO / Enterprise):\nSites / team size:\nWhat we need:\n\nThanks');
+
 /* risk modal + nav */
 function openRisk(){$('#riskOverlay').classList.add('show')}
 function closeRisk(){$('#riskOverlay').classList.remove('show')}
@@ -1089,7 +1554,7 @@ $('#clearBtn').onclick=()=>{if(state.messages.length&&!confirm('Clear this conve
 sendBtn.onclick=send;
 input.addEventListener('input',()=>{autoGrow();toggleSend()});
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();closeRisk();closeStd();closeNav();$('#logoPop').classList.remove('show')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();closeRisk();closeStd();closeDocs();closePlans();closeNav();$('#logoPop').classList.remove('show')}});
 
 /* init */
 renderModes();renderSuggest();renderCtx();renderRailTools();renderMatrix();renderThread();
