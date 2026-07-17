@@ -1660,21 +1660,29 @@ async function cloudSaveDay(dateISO,entry){
 }
 async function afterSignIn(){
   cloud.guest=false;store.del('guardian.guest');
-  try{await fetchProfile();}catch(e){authMsg('Signed in, but no profile/role is set for this account — ask your admin.','bad');await sb.auth.signOut();return;}
+  if(location.hash&&/access_token=|refresh_token=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search);
+  try{await fetchProfile();}catch(e){authMsg('Signed in as '+((cloud.user&&cloud.user.email)||'user')+', but couldn\'t load your profile ('+(e.message||e)+'). Ask your admin, or retry.','bad');return;}
   showAuth(false);setCloudBadge();cloudLoadDays();
 }
 async function initCloud(){
   if(!cloudEnabled())return;
   try{await loadSupabase();}catch(e){console.warn(e);return;}   /* offline: local mode */
-  sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey);
+  sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{detectSessionInUrl:true}});
+  /* register the listener BEFORE anything else so an OAuth return can't be missed */
+  sb.auth.onAuthStateChange((ev,s)=>{
+    if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
+    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;setCloudBadge();showAuth(true);}
+  });
+  const pendingOAuth=/access_token=|refresh_token=|error_description=|[?&#]code=/.test(location.hash+location.search);
   const {data:{session}}=await sb.auth.getSession();
-  if(session){cloud.user=session.user;await afterSignIn();}
+  if(session){if(!cloud.user){cloud.user=session.user;await afterSignIn();}}
+  else if(pendingOAuth){
+    /* tokens are in the URL but not processed yet — wait for the listener instead of showing the gate */
+    showAuth(true);authMsg('Completing Google sign-in…','wait');
+    setTimeout(()=>{if(!cloud.user)authMsg('Sign-in didn\'t complete. In Supabase → Authentication → URL Configuration, set Site URL to this page and add it to Redirect URLs, then try again.','bad');},5000);
+  }
   else if(store.get('guardian.guest')==='1'){cloud.guest=true;setCloudBadge();}
   else showAuth(true);
-  sb.auth.onAuthStateChange((_e,s)=>{
-    if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
-    else if(!s){cloud.user=null;cloud.role=null;cloud.org=null;setCloudBadge();showAuth(true);}
-  });
 }
 $('#authPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#authSignIn').click();});
 /* instant sign-up mode */
