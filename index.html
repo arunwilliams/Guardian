@@ -185,6 +185,10 @@
   .prov-tab.on .pt-t{color:var(--accent)}
   .prov-note{font-size:12px;color:var(--text-2);line-height:1.5;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 12px;margin-bottom:4px}
   .prov-note code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+  .prov-test{font-size:12px;line-height:1.45;min-height:14px;margin:12px 0 2px}
+  .prov-test.ok{color:var(--r-low)}
+  .prov-test.bad{color:var(--r-crit)}
+  .prov-test.wait{color:var(--text-3)}
   .std-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-size:13.5px;color:var(--text);cursor:pointer;margin-bottom:8px;transition:.13s}
   .std-item:hover{border-color:var(--border-2)}
   .std-item.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -459,7 +463,8 @@
     <p class="m-sub">Guardian works fully offline out of the box. Connect Claude or any free / local LLM for full AI answers — everything runs in your browser and keys stay on this device.</p>
     <div class="prov-tabs" id="provTabs"></div>
     <div id="provFields"></div>
-    <div class="m-actions"><button class="btn-ghost" id="cancelSet">Cancel</button><button class="btn-save" id="saveSet">Save</button></div>
+    <div id="provTest" class="prov-test"></div>
+    <div class="m-actions"><button class="btn-ghost" id="testSet">Test connection</button><button class="btn-ghost" id="cancelSet">Cancel</button><button class="btn-save" id="saveSet">Save</button></div>
   </div>
 </div>
 
@@ -896,7 +901,9 @@ async function runTurn(text,focusLine){
   }catch(err){
     state.lastError=true;
     const off=offlineAnswer(text);
-    contentEl.innerHTML=mdToHtml('**'+providerLabel()+' is unavailable right now** ('+esc(err.message)+'). Here\'s an offline response:\n\n'+off);
+    const netFail=/failed to fetch|networkerror|load failed|fetch/i.test(err.message||'');
+    const hint=netFail?'  \n_'+connHint(state.provider)+'_':'';
+    contentEl.innerHTML=mdToHtml('**'+providerLabel()+' is unavailable right now** ('+esc(err.message)+').'+hint+'\n\nHere\'s an offline response:\n\n'+off);
     state.messages.push({role:'assistant',content:'(offline) '+off});persist();
   }finally{state.busy=false;setStatus();toggleSend();input.focus();}
 }
@@ -981,6 +988,7 @@ function renderProvTabs(){
 }
 function fld(label,id,val,ph,type){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" ${type==='pw'?'type="password"':''} value="${esc(val||'')}" placeholder="${esc(ph||'')}" autocomplete="off" spellcheck="false"/></div>`;}
 function renderProvFields(){
+  const t=$('#provTest');if(t){t.className='prov-test';t.textContent='';}
   const box=$('#provFields');const c=state.cfg;
   if(setProv==='offline'){
     box.innerHTML=`<div class="prov-note">No setup needed. Guardian answers from a built-in EHS reference library (first aid, near miss, permits, standards, emergency numbers) — fully private and available with no connection. The risk matrix and permit tools also work offline.</div>`;
@@ -999,14 +1007,41 @@ function renderProvFields(){
       +`<div class="prov-note"><b>Runs locally — free, private, fully offline.</b> Install from <a href="https://ollama.com" target="_blank" rel="noopener">ollama.com</a>, then <code>ollama pull llama3.1</code>. So the browser can reach it, start Ollama with <code>OLLAMA_ORIGINS=*</code> (or your site's origin). Good accurate picks: <code>llama3.1</code>, <code>qwen2.5</code>, <code>mistral</code>.</div>`;
   }
 }
-function openSettings(){setProv=state.provider;renderProvTabs();renderProvFields();$('#overlay').classList.add('show');}
+function openSettings(){setProv=state.provider;renderProvTabs();renderProvFields();const t=$('#provTest');if(t){t.className='prov-test';t.textContent='';}$('#overlay').classList.add('show');}
 function closeSettings(){$('#overlay').classList.remove('show')}
 $('#settingsBtn').onclick=()=>{closeNav();openSettings()};
 $('#cancelSet').onclick=closeSettings;
 $('#overlay').onclick=e=>{if(e.target===$('#overlay'))closeSettings()};
-$('#saveSet').onclick=()=>{
+function connHint(p){
+  if(p==='ollama')return 'Ollama tip: start it with OLLAMA_ORIGINS=* (then restart) and confirm it\'s running at the Base URL. Note: this in-app preview can\'t reach your localhost — use the deployed page or open the file locally.';
+  if(p==='openai')return 'Check the Base URL and key. Some providers block direct browser calls (CORS) — OpenRouter is the most reliable from a static site.';
+  if(p==='anthropic')return 'Check your API key and model name.';
+  return 'Check your connection settings.';
+}
+async function testConnection(){
   const g=id=>{const el=$('#'+id);return el?el.value.trim():'';};
-  if(setProv==='anthropic'){state.cfg.anthropic={key:g('f_akey'),model:g('f_amodel')||'claude-sonnet-5'};}
+  const out=$('#provTest');if(!out)return;out.className='prov-test wait';out.textContent='Testing…';
+  try{
+    if(setProv==='offline'){out.className='prov-test ok';out.textContent='Offline mode needs no connection ✓';return;}
+    let res;
+    if(setProv==='anthropic'){
+      const key=g('f_akey');if(!key)throw new Error('Enter an API key first.');
+      res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:g('f_amodel')||'claude-sonnet-5',max_tokens:1,messages:[{role:'user',content:'ping'}]})});
+    }else{
+      const base=(setProv==='openai'?g('f_obase'):g('f_lbase')).replace(/\/+$/,'');
+      if(!base)throw new Error('Enter a Base URL first.');
+      const key=setProv==='openai'?g('f_okey'):'';
+      res=await fetch(base+'/models',{headers:key?{'authorization':'Bearer '+key}:{}});
+    }
+    if(!res.ok){let m='HTTP '+res.status;try{const j=await res.json();if(j.error&&j.error.message)m=j.error.message}catch(e){}throw new Error(m);}
+    out.className='prov-test ok';out.textContent='Connected ✓ — you\'re good to go.';
+  }catch(err){
+    out.className='prov-test bad';out.textContent='✗ '+err.message+' — '+connHint(setProv);
+  }
+}
+$('#testSet').onclick=testConnection;
+$('#saveSet').onclick=()=>{
+  const g=id=>{const el=$('#'+id);return el?el.value.trim():'';};  if(setProv==='anthropic'){state.cfg.anthropic={key:g('f_akey'),model:g('f_amodel')||'claude-sonnet-5'};}
   else if(setProv==='openai'){state.cfg.openai={baseUrl:g('f_obase')||'https://openrouter.ai/api/v1',key:g('f_okey'),model:g('f_omodel')||'meta-llama/llama-3.3-70b-instruct:free'};}
   else if(setProv==='ollama'){state.cfg.ollama={baseUrl:g('f_lbase')||'http://localhost:11434/v1',model:g('f_lmodel')||'llama3.1'};}
   state.provider=setProv;state.lastError=false;
