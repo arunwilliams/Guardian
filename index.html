@@ -1671,7 +1671,7 @@ async function initCloud(){
   /* register the listener BEFORE anything else so an OAuth return can't be missed */
   sb.auth.onAuthStateChange((ev,s)=>{
     if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
-    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;setCloudBadge();showAuth(true);}
+    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;masterUnlocked=false;setCloudBadge();showAuth(true);}
   });
   const pendingOAuth=/access_token=|refresh_token=|error_description=|[?&#]code=/.test(location.hash+location.search);
   const {data:{session}}=await sb.auth.getSession();
@@ -1741,10 +1741,45 @@ persistDaily=function(){_persistDaily();};
 })();
 
 /* ---- hidden master panel: Ctrl+Shift+M or 5 quick clicks on the brand mark; opens only for role=master ---- */
-let brandClicks=0,brandTimer=null;
+let brandClicks=0,brandTimer=null,masterUnlocked=false;
 function tryOpenMaster(){
   if(!sb||cloud.role!=='master')return;      /* silently ignore for everyone else */
-  renderMaster();$('#masterOverlay').classList.add('show');
+  $('#masterOverlay').classList.add('show');
+  if(masterUnlocked)renderMaster();else renderMasterLock();
+}
+async function renderMasterLock(){
+  const box=$('#masterBody');
+  box.innerHTML='<div class="prov-test wait">Checking…</div>';
+  let exists=false;
+  try{const {data,error}=await sb.rpc('admin_pin_exists');if(error)throw error;exists=!!data;}
+  catch(e){box.innerHTML='<div class="prov-test bad">PIN functions not installed — run the "Admin panel PIN" section of supabase-setup.sql, then reopen.</div>';return;}
+  const setup=!exists;
+  box.innerHTML='<div class="doc-sec">'+(setup?'Create the admin PIN':'Admin PIN required')+'</div>'
+    +'<div class="field"><label>'+(setup?'New PIN (min 6 characters)':'Enter PIN')+'</label><input id="mpin" type="password" autocomplete="off" style="font-family:\'IBM Plex Mono\',monospace"/></div>'
+    +(setup?'<div class="field"><label>Confirm PIN</label><input id="mpin2" type="password" autocomplete="off" style="font-family:\'IBM Plex Mono\',monospace"/></div>':'')
+    +'<div class="prov-test" id="mpinMsg"></div>'
+    +'<div class="m-actions"><button class="btn-save" id="mpinGo" style="flex:1">'+(setup?'Set PIN & open panel':'Unlock')+'</button></div>'
+    +'<div class="doc-note">Verified server-side for master accounts only; each attempt is rate-limited. The panel re-locks on every page load.</div>';
+  const msg=(t,c)=>{const m=$('#mpinMsg');m.className='prov-test '+(c||'');m.textContent=t||'';};
+  $('#mpin').focus();
+  const go=async()=>{
+    const p=$('#mpin').value;
+    if(setup){
+      if(p.length<6){msg('PIN must be at least 6 characters.','bad');return;}
+      if(p!==$('#mpin2').value){msg('PINs don\'t match.','bad');return;}
+      msg('Saving…','wait');
+      const {error}=await sb.rpc('set_admin_pin',{pin:p});
+      if(error){msg(error.message,'bad');return;}
+      masterUnlocked=true;renderMaster();return;
+    }
+    msg('Verifying…','wait');
+    const {data,error}=await sb.rpc('verify_admin_pin',{pin:p});
+    if(error){msg(error.message,'bad');return;}
+    if(data){masterUnlocked=true;renderMaster();}
+    else{msg('Wrong PIN.','bad');$('#mpin').value='';$('#mpin').focus();}
+  };
+  $('#mpinGo').onclick=go;
+  box.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')go();}));
 }
 document.querySelector('.brand .logo').addEventListener('click',()=>{
   brandClicks++;clearTimeout(brandTimer);brandTimer=setTimeout(()=>brandClicks=0,1600);
@@ -1781,6 +1816,7 @@ async function renderMaster(){
   });
 }
 $('#masterNewOrg').onclick=async()=>{
+  if(!masterUnlocked)return;
   const name=prompt('Organization name:');if(!name)return;
   await sb.from('organizations').insert({name});renderMaster();
 };
