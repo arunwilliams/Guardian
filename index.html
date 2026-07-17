@@ -175,6 +175,16 @@
   .btn-ghost{background:var(--surface);color:var(--text-2)}
   .btn-ghost:hover{background:var(--surface-2)}
   #stdList{max-height:52vh;overflow-y:auto;margin-bottom:4px}
+  .prov-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .prov-tab{border:1px solid var(--border-2);background:var(--surface);border-radius:10px;padding:11px 12px;text-align:left;cursor:pointer;transition:.13s}
+  .prov-tab .pt-t{font-size:13.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+  .prov-tab .pt-d{font-size:11px;color:var(--text-3);margin-top:2px}
+  .prov-tab .pt-i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .prov-tab:hover{border-color:var(--border)}
+  .prov-tab.on{border-color:var(--accent);background:var(--accent-soft)}
+  .prov-tab.on .pt-t{color:var(--accent)}
+  .prov-note{font-size:12px;color:var(--text-2);line-height:1.5;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 12px;margin-bottom:4px}
+  .prov-note code{font-family:"IBM Plex Mono",monospace;font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
   .std-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-size:13.5px;color:var(--text);cursor:pointer;margin-bottom:8px;transition:.13s}
   .std-item:hover{border-color:var(--border-2)}
   .std-item.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -406,19 +416,10 @@
 <!-- Settings modal -->
 <div class="overlay" id="overlay">
   <div class="modal set">
-    <h2>Connect your model</h2>
-    <p class="m-sub">Guardian runs entirely in your browser. Your API key is stored only on this device and sent directly to Anthropic — it never touches this site's code or any server.</p>
-    <div class="field">
-      <label for="keyIn">Anthropic API key</label>
-      <input id="keyIn" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" />
-      <div class="hint">Get one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Charges apply to your own account.</div>
-    </div>
-    <div class="field">
-      <label for="modelIn">Model</label>
-      <input id="modelIn" list="modelList" placeholder="claude-sonnet-5" spellcheck="false" />
-      <datalist id="modelList"><option value="claude-sonnet-5">Balanced</option><option value="claude-opus-4-8">Most capable</option><option value="claude-haiku-4-5-20251001">Fastest / lowest cost</option></datalist>
-      <div class="hint">Editable — see the current list at <a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">docs.claude.com/models</a>.</div>
-    </div>
+    <h2>Model &amp; connection</h2>
+    <p class="m-sub">Guardian works fully offline out of the box. Connect Claude or any free / local LLM for full AI answers — everything runs in your browser and keys stay on this device.</p>
+    <div class="prov-tabs" id="provTabs"></div>
+    <div id="provFields"></div>
     <div class="m-actions"><button class="btn-ghost" id="cancelSet">Cancel</button><button class="btn-save" id="saveSet">Save</button></div>
   </div>
 </div>
@@ -447,8 +448,12 @@ const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&g
 const defaultPermit=()=>({header:{permitNo:'',persons:'',date:'',validUpto:'',contractor:'',department:'',project:'',location:'',description:''},types:{height:false,hot:false,demolition:false},checks:{},ppe:{},ppeExtra:''});
 
 const state={
-  apiKey:store.get('guardian.key')||'',
-  model:store.get('guardian.model')||'claude-sonnet-5',
+  provider:store.get('guardian.provider')||'offline',
+  cfg:JSON.parse(store.get('guardian.cfg')||'null')||{
+    anthropic:{key:store.get('guardian.key')||'',model:store.get('guardian.model')||'claude-sonnet-5'},
+    openai:{baseUrl:'https://openrouter.ai/api/v1',key:'',model:'meta-llama/llama-3.3-70b-instruct:free'},
+    ollama:{baseUrl:'http://localhost:11434/v1',model:'llama3.1'}
+  },
   mode:store.get('guardian.mode')||'incident',
   view:'chat',
   standards:JSON.parse(store.get('guardian.standards')||'null')||{iso45001:true,india_fa:true},
@@ -458,6 +463,10 @@ const state={
   permit:JSON.parse(store.get('guardian.permit')||'null')||defaultPermit(),
   busy:false
 };
+const PROVIDERS={offline:'Offline',anthropic:'Claude',openai:'Free LLM',ollama:'Ollama (local)'};
+function isOffline(){return state.offline||state.provider==='offline';}
+function activeModel(){const c=state.cfg[state.provider];return c?c.model:'reference';}
+function providerLabel(){return PROVIDERS[state.provider]||'Offline';}
 
 const ICONS={
   incident:'<path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9v5m0 3h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
@@ -788,7 +797,7 @@ function renderEmpty(){
       <div class="cap"><span class="k" style="background:var(--r-med)"></span><span><b>Risk assessment</b><span>Hazard ID, 5×5 scoring, and controls in hierarchy order — build a JSA in minutes.</span></span></div>
       <div class="cap"><span class="k" style="background:var(--r-low)"></span><span><b>Compliance & permits</b><span>Map to ISO 45001, OSHA, or the Factories Act, and audit a permit to work before issue.</span></span></div>
     </div>
-    <p class="note">${state.apiKey?'Ready when you are.':'Add your Anthropic API key in Settings to begin — it stays on this device.'}</p>`;
+    <p class="note">${isOffline()?'Working offline from the built-in reference. Connect Claude or a free/local LLM in Settings for full AI answers.':'Ready when you are.'}</p>`;
   thread.appendChild(e);
 }
 
@@ -798,20 +807,30 @@ function autoGrow(){input.style.height='auto';input.style.height=Math.min(input.
 
 async function runTurn(text,focusLine){
   if(!text||state.busy)return;
-  if(state.offline||!state.apiKey){respondOffline(text,state.offline?'mode':'nokey');return;}
+  if(isOffline()){respondOffline(text,state.provider==='offline'?'provider':'mode');return;}
   if(state.messages.length===0)thread.innerHTML='';
   state.messages.push({role:'user',content:text});addMsg('user',text);persist();
   state.busy=true;toggleSend();setStatus('busy');
   const contentEl=addMsg('assistant','');
   const cursor=document.createElement('span');cursor.className='cursor';contentEl.appendChild(cursor);
   const system=SYS_BASE+'\n\n'+standardsLine()+'\n\nCurrent focus: '+focusLine;
+  const history=state.messages.map(m=>({role:m.role,content:m.content}));
   let acc='';state.lastError=false;
+  const anthropic=state.provider==='anthropic';
+  const cfg=state.cfg[state.provider];
+  let url,headers,body;
+  if(anthropic){
+    url='https://api.anthropic.com/v1/messages';
+    headers={'content-type':'application/json','x-api-key':cfg.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    body={model:cfg.model,max_tokens:1800,system,messages:history,stream:true};
+  }else{
+    url=(cfg.baseUrl||'').replace(/\/+$/,'')+'/chat/completions';
+    headers={'content-type':'application/json'};
+    if(cfg.key)headers['authorization']='Bearer '+cfg.key;
+    body={model:cfg.model,max_tokens:1800,stream:true,messages:[{role:'system',content:system}].concat(history)};
+  }
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'content-type':'application/json','x-api-key':state.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:state.model,max_tokens:1800,system,messages:state.messages.map(m=>({role:m.role,content:m.content})),stream:true})
-    });
+    const res=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)});
     if(!res.ok){let msg='Request failed ('+res.status+').';try{const j=await res.json();if(j.error&&j.error.message)msg=j.error.message}catch(e){}throw new Error(msg)}
     const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
     while(true){
@@ -820,10 +839,15 @@ async function runTurn(text,focusLine){
       while((i=buf.indexOf('\n'))>=0){
         const line=buf.slice(0,i).trim();buf=buf.slice(i+1);
         if(!line.startsWith('data:'))continue;
-        const data=line.slice(5).trim();if(!data)continue;
-        try{const evt=JSON.parse(data);
-          if(evt.type==='content_block_delta'&&evt.delta&&evt.delta.text){acc+=evt.delta.text;contentEl.innerHTML=mdToHtml(acc);contentEl.appendChild(cursor);scroll.scrollTop=scroll.scrollHeight;}
-          else if(evt.type==='error'){throw new Error((evt.error&&evt.error.message)||'Streaming error.')}
+        const data=line.slice(5).trim();if(!data||data==='[DONE]')continue;
+        try{const evt=JSON.parse(data);let piece='';
+          if(anthropic){
+            if(evt.type==='content_block_delta'&&evt.delta&&evt.delta.text)piece=evt.delta.text;
+            else if(evt.type==='error')throw new Error((evt.error&&evt.error.message)||'Streaming error.');
+          }else if(evt.choices&&evt.choices[0]){
+            const d=evt.choices[0].delta;if(d&&d.content)piece=d.content;
+          }
+          if(piece){acc+=piece;contentEl.innerHTML=mdToHtml(acc);contentEl.appendChild(cursor);scroll.scrollTop=scroll.scrollHeight;}
         }catch(e){}
       }
     }
@@ -833,9 +857,9 @@ async function runTurn(text,focusLine){
   }catch(err){
     cursor.remove();state.lastError=true;
     const off=offlineAnswer(text);
-    contentEl.innerHTML=mdToHtml('**Claude is unavailable right now** ('+esc(err.message)+'). Here\'s an offline response:\n\n'+off);
+    contentEl.innerHTML=mdToHtml('**'+providerLabel()+' is unavailable right now** ('+esc(err.message)+'). Here\'s an offline response:\n\n'+off);
     state.messages.push({role:'assistant',content:'(offline) '+off});persist();
-  }finally{state.busy=false;setStatus(state.apiKey?'ready':'nokey');toggleSend();input.focus();}
+  }finally{state.busy=false;setStatus();toggleSend();input.focus();}
 }
 function send(){const text=input.value.trim();if(!text)return;input.value='';autoGrow();runTurn(text,MODES[state.mode].line);}
 
@@ -871,7 +895,7 @@ function offlineAnswer(q){
 function respondOffline(text,reason){
   if(state.messages.length===0)thread.innerHTML='';
   state.messages.push({role:'user',content:text});addMsg('user',text);
-  const head=reason==='nokey'?'_Offline assist — no API key connected. Add one in Settings for full AI answers._\n\n':'_Offline assist is on — connect a key and switch it off for full AI answers._\n\n';
+  const head=reason==='provider'?'_Offline mode — built-in EHS reference. Connect Claude or a free / local LLM in Settings for full AI answers._\n\n':reason==='mode'?'_Offline assist is on — turn it off in the logo menu for full AI answers._\n\n':'_Offline — set up a model in Settings for full AI answers._\n\n';
   const full=head+offlineAnswer(text);
   addMsg('assistant',full);
   state.messages.push({role:'assistant',content:full});persist();
@@ -881,34 +905,74 @@ function respondOffline(text,reason){
 /* ---- interactive logo controller ---- */
 function setLogoState(s){document.body.dataset.gstate=s;}
 function refreshLogo(){
-  const s=state.busy?'thinking':(state.offline||!state.apiKey||state.lastError)?'offline':'ready';
+  const s=state.busy?'thinking':(isOffline()||state.lastError)?'offline':'ready';
   setLogoState(s);
   const st=$('#lpStatus');
-  if(st)st.textContent=state.busy?'Thinking…':state.offline?'Offline assist on':state.lastError?'Claude unavailable · offline assist':state.apiKey?('Connected · '+state.model):'Not connected · offline assist';
+  if(st)st.textContent=state.busy?'Thinking…':state.provider==='offline'?'Offline · built-in reference':state.offline?'Offline assist on':state.lastError?(providerLabel()+' unavailable · offline'):('Connected · '+providerLabel()+' · '+activeModel());
   const tg=$('#offlineToggle');if(tg)tg.classList.toggle('on',state.offline);
-  const lk=$('#lpSettings');if(lk)lk.textContent=state.apiKey?'Open Settings':'Connect a key in Settings';
+  const lk=$('#lpSettings');if(lk)lk.textContent='Model & connection settings';
 }
 
 function setStatus(s){
   const dots=[$('#statusDot'),$('#pillDot')];
   if(s==='busy'){dots.forEach(d=>d.className='sdot on');$('#statusText').textContent='Thinking…';$('#pillModel').textContent='thinking…';}
-  else if(s==='ready'){dots.forEach(d=>d.className='sdot on');$('#statusText').textContent=state.model;$('#pillModel').textContent=state.model;}
-  else{dots.forEach(d=>d.className='sdot');$('#statusText').textContent='Key required';$('#pillModel').textContent='not connected';}
+  else if(isOffline()){dots.forEach(d=>d.className='sdot');$('#statusText').textContent='Offline';$('#pillModel').textContent='offline · reference';}
+  else{dots.forEach(d=>d.className='sdot on');$('#statusText').textContent=activeModel();$('#pillModel').textContent=providerLabel()+' · '+activeModel();}
   refreshLogo();
 }
 function persist(){store.set('guardian.msgs',JSON.stringify(state.messages))}
 
-/* settings */
-function openSettings(){$('#keyIn').value=state.apiKey;$('#modelIn').value=state.model;$('#overlay').classList.add('show');$('#keyIn').focus();}
+/* settings — provider picker */
+let setProv='offline';
+const PROV_META={
+  offline:{t:'Offline',d:'Built-in reference · no setup',i:'var(--r-med)'},
+  anthropic:{t:'Claude',d:'Anthropic · most capable',i:'var(--accent)'},
+  openai:{t:'Free LLM',d:'OpenRouter / Groq / any OpenAI-compatible',i:'var(--mandatory,#1F6FB2)'},
+  ollama:{t:'Ollama',d:'Local model · free & private',i:'var(--r-low)'}
+};
+function renderProvTabs(){
+  const w=$('#provTabs');w.innerHTML='';
+  Object.keys(PROV_META).forEach(id=>{
+    const m=PROV_META[id];const b=document.createElement('button');
+    b.className='prov-tab'+(id===setProv?' on':'');
+    b.innerHTML=`<div class="pt-t"><span class="pt-i" style="background:${m.i}"></span>${m.t}</div><div class="pt-d">${m.d}</div>`;
+    b.onclick=()=>{setProv=id;renderProvTabs();renderProvFields();};
+    w.appendChild(b);
+  });
+}
+function fld(label,id,val,ph,type){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" ${type==='pw'?'type="password"':''} value="${esc(val||'')}" placeholder="${esc(ph||'')}" autocomplete="off" spellcheck="false"/></div>`;}
+function renderProvFields(){
+  const box=$('#provFields');const c=state.cfg;
+  if(setProv==='offline'){
+    box.innerHTML=`<div class="prov-note">No setup needed. Guardian answers from a built-in EHS reference library (first aid, near miss, permits, standards, emergency numbers) — fully private and available with no connection. The risk matrix and permit tools also work offline.</div>`;
+  }else if(setProv==='anthropic'){
+    box.innerHTML=fld('Anthropic API key','f_akey',c.anthropic.key,'sk-ant-…','pw')
+      +fld('Model','f_amodel',c.anthropic.model,'claude-sonnet-5')
+      +`<div class="prov-note">Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Models at <a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">docs.claude.com/models</a>. Charges apply to your account.</div>`;
+  }else if(setProv==='openai'){
+    box.innerHTML=fld('Base URL','f_obase',c.openai.baseUrl,'https://openrouter.ai/api/v1')
+      +fld('API key','f_okey',c.openai.key,'leave blank for local servers','pw')
+      +fld('Model','f_omodel',c.openai.model,'meta-llama/llama-3.3-70b-instruct:free')
+      +`<div class="prov-note">Works with any OpenAI-compatible API. <b>Free options:</b> <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a> (has <code>:free</code> models) and <a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq</a> (base <code>https://api.groq.com/openai/v1</code>). Also LM Studio / vLLM local servers. If a provider blocks browser calls (CORS), OpenRouter is the most reliable from a static site.</div>`;
+  }else{
+    box.innerHTML=fld('Base URL','f_lbase',c.ollama.baseUrl,'http://localhost:11434/v1')
+      +fld('Model','f_lmodel',c.ollama.model,'llama3.1')
+      +`<div class="prov-note"><b>Runs locally — free, private, fully offline.</b> Install from <a href="https://ollama.com" target="_blank" rel="noopener">ollama.com</a>, then <code>ollama pull llama3.1</code>. So the browser can reach it, start Ollama with <code>OLLAMA_ORIGINS=*</code> (or your site's origin). Good accurate picks: <code>llama3.1</code>, <code>qwen2.5</code>, <code>mistral</code>.</div>`;
+  }
+}
+function openSettings(){setProv=state.provider;renderProvTabs();renderProvFields();$('#overlay').classList.add('show');}
 function closeSettings(){$('#overlay').classList.remove('show')}
 $('#settingsBtn').onclick=()=>{closeNav();openSettings()};
 $('#cancelSet').onclick=closeSettings;
 $('#overlay').onclick=e=>{if(e.target===$('#overlay'))closeSettings()};
 $('#saveSet').onclick=()=>{
-  const k=$('#keyIn').value.trim(),m=$('#modelIn').value.trim()||'claude-sonnet-5';
-  state.apiKey=k;state.model=m;
-  if(k)store.set('guardian.key',k);else store.del('guardian.key');
-  store.set('guardian.model',m);setStatus(k?'ready':'nokey');toggleSend();closeSettings();
+  const g=id=>{const el=$('#'+id);return el?el.value.trim():'';};
+  if(setProv==='anthropic'){state.cfg.anthropic={key:g('f_akey'),model:g('f_amodel')||'claude-sonnet-5'};}
+  else if(setProv==='openai'){state.cfg.openai={baseUrl:g('f_obase')||'https://openrouter.ai/api/v1',key:g('f_okey'),model:g('f_omodel')||'meta-llama/llama-3.3-70b-instruct:free'};}
+  else if(setProv==='ollama'){state.cfg.ollama={baseUrl:g('f_lbase')||'http://localhost:11434/v1',model:g('f_lmodel')||'llama3.1'};}
+  state.provider=setProv;state.lastError=false;
+  store.set('guardian.provider',state.provider);store.set('guardian.cfg',JSON.stringify(state.cfg));
+  setStatus();toggleSend();closeSettings();
   if(state.messages.length===0)renderThread();
 };
 
@@ -956,8 +1020,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();clo
 /* init */
 renderModes();renderSuggest();renderCtx();renderRailTools();renderMatrix();renderThread();
 bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();updateStandardsSub();
-setStatus(state.apiKey?'ready':'nokey');toggleSend();refreshLogo();
-if(!state.apiKey)setTimeout(openSettings,400);
+setStatus();toggleSend();refreshLogo();
+if(!store.get('guardian.seen')){store.set('guardian.seen','1');setTimeout(openSettings,500);}
 </script>
 </body>
 </html>
