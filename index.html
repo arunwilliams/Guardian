@@ -563,6 +563,7 @@
       Sign in with Google
     </button>
     <div style="text-align:center;margin-top:14px"><a href="#" id="authToggle" style="font-size:12.5px;font-weight:600">New here? Create an account</a></div>
+    <div style="text-align:center;margin-top:8px"><a href="#" id="authGuest" style="font-size:12px;color:var(--text-3)">View as guest — limited overview</a></div>
     <div style="font-size:11.5px;color:var(--text-3);margin-top:12px;line-height:1.5" id="authNote">Sign up instantly — your organization admin then assigns your site and role before you can see shared data.</div>
   </div>
 </div>
@@ -1559,8 +1560,9 @@ function renderDocs(){
   const addRow=(d,premium)=>{
     const row=document.createElement('div');row.className='doc-row';
     row.innerHTML='<div class="doc-meta"><b>'+d.t+(premium?' <span class="prem-badge">Premium</span>':'')+'</b><span>'+d.d+'</span></div><div class="doc-acts"><button class="doc-btn" data-a="p">Print</button><button class="doc-btn" data-a="d">Download</button></div>';
-    row.querySelector('[data-a="p"]').onclick=()=>{$('#printArea').innerHTML=d.f();window.print();};
-    row.querySelector('[data-a="d"]').onclick=()=>downloadDoc(d.t,d.f());
+    const gated=premium&&(typeof isGuest==='function')&&isGuest();
+    row.querySelector('[data-a="p"]').onclick=()=>{if(gated){closeDocs();guestGate('Premium documents');return;}$('#printArea').innerHTML=d.f();window.print();};
+    row.querySelector('[data-a="d"]').onclick=()=>{if(gated){closeDocs();guestGate('Premium documents');return;}downloadDoc(d.t,d.f());};
     box.appendChild(row);
   };
   const sec=t=>{const h=document.createElement('div');h.className='doc-sec';h.textContent=t;box.appendChild(h);};
@@ -1618,7 +1620,20 @@ function showAuth(v){$('#authOverlay').classList.toggle('show',v);}
 function setCloudBadge(){
   const b=$('#cloudBadge');if(!cloudEnabled()){b.style.display='none';return;}
   b.style.display='flex';
-  $('#cloudWho').textContent=cloud.user?((cloud.orgName||'No org')+' · '+(cloud.role||'user')):'signed out';
+  if(cloud.guest){
+    $('#cloudWho').textContent='Guest · limited overview';
+    $('#signOutBtn').textContent='Sign in';
+  }else{
+    $('#cloudWho').textContent=cloud.user?((cloud.orgName||'No org')+' · '+(cloud.role||'user')):'signed out';
+    $('#signOutBtn').textContent='Sign out';
+  }
+}
+function isGuest(){return cloudEnabled()&&cloud.guest&&!cloud.user}
+function guestGate(what){
+  if(!isGuest())return false;
+  alert(what+' is available to signed-in members.\n\nCreate a free account (or sign in) to continue — your organization admin then assigns your site.');
+  cloud.guest=false;store.del('guardian.guest');setCloudBadge();showAuth(true);
+  return true;
 }
 async function loadSupabase(){
   if(window.supabase)return;
@@ -1644,6 +1659,7 @@ async function cloudSaveDay(dateISO,entry){
   await sb.from('daily_entries').upsert({org_id:cloud.org,date:dateISO,data:entry,updated_by:cloud.user.id});
 }
 async function afterSignIn(){
+  cloud.guest=false;store.del('guardian.guest');
   try{await fetchProfile();}catch(e){authMsg('Signed in, but no profile/role is set for this account — ask your admin.','bad');await sb.auth.signOut();return;}
   showAuth(false);setCloudBadge();cloudLoadDays();
 }
@@ -1653,6 +1669,7 @@ async function initCloud(){
   sb=window.supabase.createClient(CLOUD.url,CLOUD.anonKey);
   const {data:{session}}=await sb.auth.getSession();
   if(session){cloud.user=session.user;await afterSignIn();}
+  else if(store.get('guardian.guest')==='1'){cloud.guest=true;setCloudBadge();}
   else showAuth(true);
   sb.auth.onAuthStateChange((_e,s)=>{
     if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
@@ -1696,13 +1713,23 @@ $('#authGoogle').onclick=async()=>{
     options:{redirectTo:window.location.origin+window.location.pathname}});
   if(error)authMsg(error.message,'bad');
 };
-$('#signOutBtn').onclick=async()=>{if(sb)await sb.auth.signOut();};
+$('#signOutBtn').onclick=async()=>{
+  if(isGuest()){cloud.guest=false;store.del('guardian.guest');setCloudBadge();showAuth(true);return;}
+  if(sb)await sb.auth.signOut();
+};
+$('#authGuest').onclick=e=>{
+  e.preventDefault();
+  cloud.guest=true;store.set('guardian.guest','1');
+  showAuth(false);setCloudBadge();
+};
 
 /* hook daily saves into the cloud */
 const _persistDaily=persistDaily;
 persistDaily=function(){_persistDaily();};
 (function(){const orig=$('#dailySave').onclick;
-  $('#dailySave').onclick=()=>{orig();const sel=$('#d_date').value;if(sel&&state.daily[sel])cloudSaveDay(sel,state.daily[sel]);};
+  $('#dailySave').onclick=()=>{if(guestGate('Logging site data'))return;orig();const sel=$('#d_date').value;if(sel&&state.daily[sel])cloudSaveDay(sel,state.daily[sel]);};
+  const origDel=$('#dailyDelete').onclick;
+  $('#dailyDelete').onclick=()=>{if(guestGate('Editing the site register'))return;origDel();};
 })();
 
 /* ---- hidden master panel: Ctrl+Shift+M or 5 quick clicks on the brand mark; opens only for role=master ---- */
