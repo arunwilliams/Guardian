@@ -7,7 +7,8 @@
 <meta name="description" content="Guardian — a clean AI assistant for EHS teams: incident triage, risk assessment, compliance, and permits to work." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" /></noscript>
 <style>
   :root{
     --bg:#FBFBFA;--surface:#FFFFFF;--surface-2:#F5F5F3;--border:#EAEAE6;--border-2:#DEDED9;
@@ -93,6 +94,9 @@
   .caps{display:flex;flex-direction:column;gap:10px}
   .cap{display:flex;gap:13px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm)}
   .cap .k{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:0 0 auto}
+  .cap-ic{width:34px;height:34px;border-radius:9px;background:var(--surface-2);display:grid;place-items:center;flex:0 0 auto}
+  .cap-ic svg{width:19px;height:19px}
+  .cap:hover .cap-ic svg{transform:scale(1.12) rotate(-4deg);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
   .cap b{font-weight:600;font-size:14.5px;display:block;margin-bottom:1px}
   .cap span{font-size:13px;color:var(--text-2);line-height:1.45}
   .note{margin-top:20px;font-size:13px;color:var(--text-3);line-height:1.5}
@@ -242,6 +246,16 @@
   .bar-lbls span{flex:1;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:8.5px;color:var(--text-3)}
   @media(max-width:820px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.num-grid{grid-template-columns:1fr 1fr}}
   @media(max-width:560px){.num-grid{grid-template-columns:1fr}}
+  /* permit workflow + gas */
+  .status-bar{display:flex;gap:6px;flex-wrap:wrap}
+  .st{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;color:var(--text-3);transition:.13s;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .st .sn{font-family:"IBM Plex Mono",monospace;font-size:10px}
+  .st.done{color:var(--accent);border-color:#CDE4E1}
+  .st.cur{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 8px var(--accent-ring)}
+  .st:hover{transform:translateY(-1px)}
+  .gas-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:12px}
+  .gas-grid .fld input{font-family:"IBM Plex Mono",monospace}
+  @media(max-width:820px){.gas-grid{grid-template-columns:repeat(3,1fr)}}
   /* google sign-in */
   .auth-div{display:flex;align-items:center;gap:10px;margin:14px 0 12px;color:var(--text-3);font-size:11px}
   .auth-div::before,.auth-div::after{content:"";flex:1;height:1px;background:var(--border)}
@@ -363,6 +377,9 @@
   @keyframes sparkle{0%,100%{transform:scale(.7) rotate(0);opacity:.5}50%{transform:scale(1) rotate(90deg);opacity:1}}
   .composer-logo:hover{transform:translateY(-1px)}
   .composer-logo{transition:transform .15s,border-color .15s,box-shadow .15s}
+  .av-shield{display:grid;place-items:center;animation:gbreathe 3.6s ease-in-out infinite}
+  .av-shield .g-core{animation:avblink 2.8s ease-in-out infinite}
+  @keyframes avblink{0%,88%,100%{opacity:1}92%,96%{opacity:.15}}
 
   #printArea{display:none}
   @media print{
@@ -494,6 +511,35 @@
           </div>
 
           <div id="checkArea"></div>
+
+          <div class="pcard">
+            <h3><span class="tagdot" style="background:#7C5CD6"></span>Permit workflow</h3>
+            <div class="status-bar" id="statusBar"></div>
+          </div>
+
+          <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--r-high)"></span>Risk references &amp; gas test</h3>
+            <div class="grid2">
+              <div class="fld"><label>Task risk assessment (TRA) ref</label><input id="p_tra" placeholder="e.g. TRA-2026-014" /></div>
+              <div class="fld"><label>Isolation certificate (ICC) ref</label><input id="p_icc" placeholder="e.g. ICC-032 / N/A" /></div>
+              <div class="fld full"><label>SIMOPS / conflicting work check</label><input id="p_simops" placeholder="Nearby permits or simultaneous operations considered" /></div>
+            </div>
+            <div class="gas-grid">
+              <div class="fld"><label>O₂ %</label><input id="g_o2" inputmode="decimal" placeholder="20.9" /></div>
+              <div class="fld"><label>LEL %</label><input id="g_lel" inputmode="decimal" placeholder="0" /></div>
+              <div class="fld"><label>CO ppm</label><input id="g_co" inputmode="decimal" placeholder="0" /></div>
+              <div class="fld"><label>H₂S ppm</label><input id="g_h2s" inputmode="decimal" placeholder="0" /></div>
+              <div class="fld"><label>Test time</label><input id="g_time" placeholder="e.g. 08:15" /></div>
+              <div class="fld"><label>Tested by</label><input id="g_by" placeholder="AGT name" /></div>
+            </div>
+            <div class="doc-note" style="border-top:none;padding-top:6px;margin-top:6px">Gas test required before hot work / confined-space entry; repeat per site frequency. Acceptance: O₂ 19.5–23.5%, LEL 0%, CO &lt; 25 ppm, H₂S &lt; 5 ppm (site rules prevail).</div>
+          </div>
+
+          <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--r-low)"></span>Audit &amp; compliance</h3>
+            <label class="lp-toggle" id="auditAll" style="margin-top:0"><span>Comply to all selected standards (<span id="auditStdList"></span>)</span><span class="lp-sw"></span></label>
+            <div class="fld full" style="margin-top:12px"><label>Custom / other audits (client, corporate, OISD…)</label><input id="p_auditCustom" placeholder="e.g. Client HSE audit Q3, OISD-105, corporate LSR audit" /></div>
+          </div>
 
           <div class="pcard">
             <h3><span class="tagdot" style="background:var(--mandatory,#1F6FB2)"></span>PPE required</h3>
@@ -683,7 +729,8 @@ const store={
 const $=s=>document.querySelector(s);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-const defaultPermit=()=>({header:{permitNo:'',persons:'',date:'',validUpto:'',contractor:'',department:'',project:'',location:'',description:''},types:{height:false,hot:false,demolition:false},checks:{},ppe:{},ppeExtra:''});
+const defaultPermit=()=>({header:{permitNo:'',persons:'',date:'',validUpto:'',contractor:'',department:'',project:'',location:'',description:''},types:{height:false,hot:false,demolition:false},checks:{},ppe:{},ppeExtra:'',status:'Draft',refs:{tra:'',icc:'',simops:''},gas:{o2:'',lel:'',co:'',h2s:'',time:'',by:''},audit:{all:true,custom:''}});
+const PERMIT_STATUSES=['Draft','Assessed','Approved','Issued','Active','Suspended','Closed'];
 
 const state={
   provider:store.get('guardian.provider')||'offline',
@@ -698,7 +745,7 @@ const state={
   offline:store.get('guardian.offline')==='1',
   lastError:false,
   messages:JSON.parse(store.get('guardian.msgs')||'[]'),
-  permit:JSON.parse(store.get('guardian.permit')||'null')||defaultPermit(),
+  permit:(function(){const p=JSON.parse(store.get('guardian.permit')||'null')||defaultPermit();const d=defaultPermit();['refs','gas','audit'].forEach(k=>p[k]=p[k]||d[k]);p.status=p.status||'Draft';return p;})(),
   busy:false
 };
 const PROVIDERS={offline:'Offline',anthropic:'Claude',openai:'Free LLM',ollama:'Ollama (local)'};
@@ -829,6 +876,7 @@ function setView(v){
   $('#permitNav').classList.toggle('active',v==='permit');
   $('#dailyNav').classList.toggle('active',v==='daily');
   if(v==='permit'){
+    if(typeof ensurePermitInit==='function')ensurePermitInit();
     document.querySelectorAll('#modes .mode').forEach(x=>x.classList.remove('active'));
     $('#ctxTitle').textContent='Permit to work';
     $('#ctxSub').textContent='Fill the PTW, review it with Guardian, then print.';
@@ -888,6 +936,29 @@ function bindHeader(){
     el.oninput=()=>{state.permit.header[k]=el.value;persistPermit();};
   });
   const ex=$('#p_ppeExtra');ex.value=state.permit.ppeExtra||'';ex.oninput=()=>{state.permit.ppeExtra=ex.value;persistPermit();};
+  /* eVision-style extras */
+  const bind=(sel,obj,key)=>{const el=$(sel);if(!el)return;el.value=obj[key]||'';el.oninput=()=>{obj[key]=el.value;persistPermit();};};
+  bind('#p_tra',state.permit.refs,'tra');bind('#p_icc',state.permit.refs,'icc');bind('#p_simops',state.permit.refs,'simops');
+  bind('#g_o2',state.permit.gas,'o2');bind('#g_lel',state.permit.gas,'lel');bind('#g_co',state.permit.gas,'co');
+  bind('#g_h2s',state.permit.gas,'h2s');bind('#g_time',state.permit.gas,'time');bind('#g_by',state.permit.gas,'by');
+  bind('#p_auditCustom',state.permit.audit,'custom');
+  const at=$('#auditAll');
+  const syncAudit=()=>{at.classList.toggle('on',!!state.permit.audit.all);
+    $('#auditStdList').textContent=STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label.split('—').pop().trim()).join(', ')||'none selected';};
+  at.onclick=()=>{state.permit.audit.all=!state.permit.audit.all;persistPermit();syncAudit();};
+  syncAudit();
+  renderStatusBar();
+}
+function renderStatusBar(){
+  const bar=$('#statusBar');bar.innerHTML='';
+  const cur=PERMIT_STATUSES.indexOf(state.permit.status||'Draft');
+  PERMIT_STATUSES.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.className='st'+(i<cur?' done':'')+(i===cur?' cur':'');
+    b.innerHTML='<span class="sn">'+(i+1)+'</span>'+s;
+    b.onclick=()=>{state.permit.status=s;persistPermit();renderStatusBar();updatePermitMeta();};
+    bar.appendChild(b);
+  });
 }
 function renderTypeChips(){
   const wrap=$('#typeChips');wrap.innerHTML='';
@@ -961,6 +1032,11 @@ function serializePermit(){
   });
   const ppe=PPE_LIST.filter(n=>p.ppe[n]);
   out+=`\nPPE selected: ${ppe.length?ppe.join(', '):'none'}${p.ppeExtra?'; additional: '+p.ppeExtra:''}\n`;
+  out+=`\nWorkflow status: ${p.status||'Draft'}\n`;
+  out+=`TRA ref: ${p.refs.tra||'—'} | Isolation (ICC): ${p.refs.icc||'—'} | SIMOPS check: ${p.refs.simops||'—'}\n`;
+  out+=`Gas test: O2 ${p.gas.o2||'—'}% | LEL ${p.gas.lel||'—'}% | CO ${p.gas.co||'—'} ppm | H2S ${p.gas.h2s||'—'} ppm | at ${p.gas.time||'—'} by ${p.gas.by||'—'}\n`;
+  const stds=STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label).join('; ');
+  out+=`Audit & compliance: ${p.audit.all?('comply to all selected standards ('+(stds||'none')+')'):'NOT marked as complying to all selected standards'}${p.audit.custom?'; custom audits: '+p.audit.custom:''}\n`;
   return out;
 }
 function buildPrint(){
@@ -979,6 +1055,10 @@ function buildPrint(){
       <tr><td>Project</td><td>${esc(h.project)||'—'}</td><td>Department</td><td>${esc(h.department)||'—'}</td></tr>
       <tr><td>Location</td><td colspan="3">${esc(h.location)||'—'}</td></tr>
       <tr><td>Work types</td><td colspan="3">${activeSections().map(a=>PERMIT_CHECKS[a].title).join(', ')}</td></tr>
+      <tr><td>Status</td><td>${esc(p.status||'Draft')}</td><td>TRA / ICC</td><td>${esc(p.refs.tra)||'—'} / ${esc(p.refs.icc)||'—'}</td></tr>
+      <tr><td>SIMOPS check</td><td colspan="3">${esc(p.refs.simops)||'—'}</td></tr>
+      <tr><td>Gas test</td><td colspan="3">O₂ ${esc(p.gas.o2)||'—'}% · LEL ${esc(p.gas.lel)||'—'}% · CO ${esc(p.gas.co)||'—'} ppm · H₂S ${esc(p.gas.h2s)||'—'} ppm · at ${esc(p.gas.time)||'—'} by ${esc(p.gas.by)||'—'}</td></tr>
+      <tr><td>Audit &amp; compliance</td><td colspan="3">${p.audit.all?'Complies with all selected standards: '+(STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label).join('; ')||'none selected'):'Not marked as complying to all selected standards'}${p.audit.custom?' · Custom audits: '+esc(p.audit.custom):''}</td></tr>
       <tr><td>Description</td><td colspan="3">${esc(h.description)||'—'}</td></tr>
     </tbody></table>
     ${secHtml}
@@ -1028,8 +1108,8 @@ function reviewPermitOffline(){
 $('#permitReview').onclick=()=>{closeNav();if(isOffline()){reviewPermitOffline();}else{setView('chat');runTurn('Please review this Permit to Work.\n\n'+serializePermit(),PERMIT_FOCUS);}};
 $('#permitPrint').onclick=()=>{$('#printArea').innerHTML=buildPrint();window.print();};
 $('#permitReset').onclick=()=>{if(!confirm('Clear this permit?'))return;state.permit=defaultPermit();persistPermit();bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();};
-$('#permitNav').onclick=()=>{setView('permit');closeNav();};
-$('#dailyNav').onclick=()=>{setView('daily');closeNav();};
+$('#permitNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The permit-to-work system (contains site-sensitive data)'))return;setView('permit');closeNav();};
+$('#dailyNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The site register & dashboard'))return;setView('daily');closeNav();};
 
 /* ---- daily EHS dashboard ---- */
 const DAILY_METRICS=[
@@ -1178,7 +1258,7 @@ function mdToHtml(t){
 }
 function addMsg(role,text,opts={}){
   const el=document.createElement('div');el.className='msg '+(role==='user'?'user':'bot');
-  el.innerHTML=`<div class="avatar ${role==='user'?'you':'bot'}">${role==='user'?'YOU':'G'}</div><div class="bubble"><div class="content ${opts.err?'err':''}"></div></div>`;
+  el.innerHTML=`<div class="avatar ${role==='user'?'you':'bot'}">${role==='user'?'YOU':'<span class="glogo av-shield"><svg viewBox="0 0 24 24" fill="none" width="17" height="17"><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'}</div><div class="bubble"><div class="content ${opts.err?'err':''}"></div></div>`;
   const c=el.querySelector('.content');
   if(role==='user'){c.textContent=text}else{c.innerHTML=text?mdToHtml(text):''}
   thread.appendChild(el);scroll.scrollTop=scroll.scrollHeight;return c;
@@ -1190,12 +1270,14 @@ function renderEmpty(){
     <h2>How can I help keep the site safe?</h2>
     <p class="lede">One place for the jobs that fill a safety coordinator's day. Pick a workspace on the left, open a permit to work, or just start typing.</p>
     <div class="caps">
-      <div class="cap"><span class="k" style="background:var(--r-crit)"></span><span><b>Incident triage</b><span>Classify severity, drive containment, flag what's reportable, and start root-cause analysis.</span></span></div>
-      <div class="cap"><span class="k" style="background:var(--r-med)"></span><span><b>Risk assessment</b><span>Hazard ID, 5×5 scoring, and controls in hierarchy order — build a JSA in minutes.</span></span></div>
-      <div class="cap"><span class="k" style="background:var(--r-low)"></span><span><b>Compliance & permits</b><span>Map to ISO 45001, OSHA, or the Factories Act, and audit a permit to work before issue.</span></span></div>
+      <div class="cap"><span class="cap-ic" style="color:var(--r-crit)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9v5m0 3h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><span><b>Incident &amp; near miss</b><span>Classify severity, drive containment, flag what's reportable, and start root-cause analysis.</span></span></div>
+      <div class="cap"><span class="cap-ic" style="color:var(--r-med)"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 0 1 18 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 12l4-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg></span><span><b>Risk assessment</b><span>Hazard ID, 5×5 scoring, and controls in hierarchy order — build a JSA in minutes.</span></span></div>
+      <div class="cap"><span class="cap-ic" style="color:var(--accent)"><svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8a1 1 0 0 1 1 1v0a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/><path d="M6 6H5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1" stroke="currentColor" stroke-width="1.5"/><path d="m8 13 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>Permits · eVision-style workflow</b><span>Draft → Assessed → Approved → Issued → Active, with TRA/ICC refs, gas testing and audit compliance.</span></span></div>
+      <div class="cap"><span class="cap-ic" style="color:var(--mandatory,#1F6FB2)"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 14l2 2 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>Daily dashboard &amp; documents</b><span>Log audits, inspections, walks and quality reports date-wise — with cumulative KPIs and print-ready reports.</span></span></div>
     </div>
-    <p class="note">${isOffline()?'Working offline from the built-in reference. Connect Claude or a free/local LLM in Settings for full AI answers.':'Ready when you are.'}</p>`;
+    <p class="note">${isOffline()?'Working offline from the built-in reference. <a href="#" id="quickFreeAI">Connect a free AI model →</a>':'Ready when you are.'}</p>`;
   thread.appendChild(e);
+  const q=$('#quickFreeAI');if(q)q.onclick=ev=>{ev.preventDefault();openSettings();setProv='openai';renderProvTabs();renderProvFields();};
 }
 
 /* ---- chat pipeline ---- */
@@ -1588,7 +1670,7 @@ $('#plansOverlay').onclick=e=>{if(e.target===$('#plansOverlay'))closePlans()};
 $('#contactBtn').href='mailto:'+SUPPORT_EMAIL+'?subject='+encodeURIComponent('Guardian EHS — plans & support enquiry')+'&body='+encodeURIComponent('Hi,\n\nWe are interested in Guardian for our organization.\n\nOrganization:\nPlan of interest (Business / NGO / Enterprise):\nSites / team size:\nWhat we need:\n\nThanks');
 
 /* risk modal + nav */
-function openRisk(){$('#riskOverlay').classList.add('show')}
+function openRisk(){if(typeof ensureMatrixInit==='function')ensureMatrixInit();$('#riskOverlay').classList.add('show')}
 function closeRisk(){$('#riskOverlay').classList.remove('show')}
 $('#openRisk').onclick=()=>{closeNav();openRisk()};
 $('#riskOverlay').onclick=e=>{if(e.target===$('#riskOverlay'))closeRisk()};
@@ -1609,8 +1691,11 @@ input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventD
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();closeRisk();closeStd();closeDocs();closePlans();closeNav();$('#logoPop').classList.remove('show')}});
 
 /* init */
-renderModes();renderSuggest();renderCtx();renderRailTools();renderMatrix();renderThread();
-bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();updateStandardsSub();
+renderModes();renderSuggest();renderCtx();renderRailTools();renderThread();
+let permitInit=false,matrixInit=false;
+function ensurePermitInit(){if(permitInit)return;permitInit=true;bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();}
+function ensureMatrixInit(){if(matrixInit)return;matrixInit=true;renderMatrix();}
+updateStandardsSub();
 setStatus();toggleSend();refreshLogo();
 if(!store.get('guardian.seen')){store.set('guardian.seen','1');setTimeout(openSettings,500);}
 
@@ -1673,13 +1758,31 @@ async function initCloud(){
     if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
     else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;masterUnlocked=false;setCloudBadge();showAuth(true);}
   });
-  const pendingOAuth=/access_token=|refresh_token=|error_description=|[?&#]code=/.test(location.hash+location.search);
+  const hashParams=new URLSearchParams(location.hash.replace(/^#/,''));
+  const qsParams=new URLSearchParams(location.search);
+  const oauthError=hashParams.get('error_description')||qsParams.get('error_description')||hashParams.get('error')||qsParams.get('error');
+  const oauthCode=qsParams.get('code');
+  const cleanUrl=()=>history.replaceState(null,'',location.pathname);
   const {data:{session}}=await sb.auth.getSession();
   if(session){if(!cloud.user){cloud.user=session.user;await afterSignIn();}}
-  else if(pendingOAuth){
-    /* tokens are in the URL but not processed yet — wait for the listener instead of showing the gate */
+  else if(oauthError){
+    showAuth(true);
+    authMsg('Google sign-in returned an error: '+decodeURIComponent(oauthError).replace(/\+/g,' '),'bad');
+    cleanUrl();
+  }
+  else if(oauthCode){
+    /* PKCE return — exchange the code explicitly so any failure is shown, not swallowed */
     showAuth(true);authMsg('Completing Google sign-in…','wait');
-    setTimeout(()=>{if(!cloud.user)authMsg('Sign-in didn\'t complete. In Supabase → Authentication → URL Configuration, set Site URL to this page and add it to Redirect URLs, then try again.','bad');},5000);
+    const {error}=await sb.auth.exchangeCodeForSession(oauthCode);
+    cleanUrl();
+    if(error&&!cloud.user){
+      authMsg('Couldn\'t complete sign-in: '+error.message+'. Retry the Google button in this same tab; if it repeats, confirm this exact page URL is listed in Supabase → Authentication → URL Configuration → Redirect URLs.','bad');
+    }
+  }
+  else if(hashParams.get('access_token')){
+    /* implicit-flow tokens — the listener will pick them up */
+    showAuth(true);authMsg('Completing Google sign-in…','wait');
+    setTimeout(()=>{if(!cloud.user)authMsg('Sign-in didn\'t complete. Confirm this page URL is set as Site URL and listed under Redirect URLs in Supabase → Authentication → URL Configuration, then try again.','bad');},5000);
   }
   else if(store.get('guardian.guest')==='1'){cloud.guest=true;setCloudBadge();}
   else showAuth(true);
