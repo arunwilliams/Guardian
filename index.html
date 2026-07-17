@@ -263,6 +263,45 @@
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
   /* Print */
+  /* Claude-style animated icons & micro-motion */
+  .mode svg,.tool-btn svg,.ghost-btn svg,.send svg{transition:transform .28s cubic-bezier(.34,1.56,.64,1)}
+  .mode:hover svg,.tool-btn:hover svg,.ghost-btn:hover svg{transform:scale(1.18) rotate(-5deg)}
+  .mode .dot{transition:transform .28s ease}
+  .mode:hover .dot{transform:scale(1.5)}
+  .mode.active[data-mode="incident"] svg{animation:gi-pulse 1.9s ease-in-out infinite;transform-origin:12px 13px}
+  .mode.active[data-mode="nearmiss"] svg{animation:gi-wobble 2.6s ease-in-out infinite;transform-origin:12px 12px}
+  .mode.active[data-mode="firstaid"] svg{animation:gi-beat 2.1s ease-in-out infinite;transform-origin:12px 13px}
+  .mode.active[data-mode="risk"] svg{animation:gi-sweep 3s ease-in-out infinite;transform-origin:12px 15px}
+  .mode.active[data-mode="compliance"] svg{animation:gi-bob 3s ease-in-out infinite}
+  .tool-btn.active svg{animation:gi-bob 3s ease-in-out infinite}
+  @keyframes gi-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.7}}
+  @keyframes gi-wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+  @keyframes gi-beat{0%,100%{transform:scale(1)}14%{transform:scale(1.24)}28%{transform:scale(1)}42%{transform:scale(1.16)}56%{transform:scale(1)}}
+  @keyframes gi-sweep{0%,100%{transform:rotate(-11deg)}50%{transform:rotate(11deg)}}
+  @keyframes gi-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+  .send:hover svg{transform:translateX(3px)}
+  .send:active svg{transform:translateX(7px)}
+  .send:not(:disabled):hover{transform:translateY(-1px)}
+  .chip{transition:transform .15s,border-color .15s,color .15s,background .15s}
+  .chip:hover{transform:translateY(-1px)}
+  .type-chip svg,.ppe-item,.std-item,.prov-tab{transition:transform .18s ease,border-color .15s,background .15s,color .15s}
+  .ppe-item:hover,.std-item:hover{transform:translateY(-1px)}
+  .mode,.tool-btn{transition:background .15s,color .15s,transform .15s}
+  .mode:active,.tool-btn:active{transform:scale(.97)}
+  /* thinking dots */
+  .typing{display:inline-flex;gap:5px;padding:6px 0}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:td 1.25s ease-in-out infinite}
+  .typing i:nth-child(2){animation-delay:.16s}
+  .typing i:nth-child(3){animation-delay:.32s}
+  @keyframes td{0%,65%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-6px);opacity:1}}
+  .cursor{border-radius:2px}
+  /* brand spark */
+  .spark{display:inline-block;width:12px;height:12px;margin-left:5px;color:var(--accent);vertical-align:-1px;animation:sparkle 3.4s ease-in-out infinite}
+  .spark svg{width:12px;height:12px;display:block}
+  @keyframes sparkle{0%,100%{transform:scale(.7) rotate(0);opacity:.5}50%{transform:scale(1) rotate(90deg);opacity:1}}
+  .composer-logo:hover{transform:translateY(-1px)}
+  .composer-logo{transition:transform .15s,border-color .15s,box-shadow .15s}
+
   #printArea{display:none}
   @media print{
     .app,.overlay,.backdrop{display:none!important}
@@ -288,7 +327,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="logo glogo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1.1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".55"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div><div class="name">Guardian</div><div class="tag">EHS assistant</div></div>
+      <div><div class="name">Guardian<span class="spark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2c.4 4.6 2.8 7 7.4 7.4-4.6.4-7 2.8-7.4 7.4-.4-4.6-2.8-7-7.4-7.4C9.2 9 11.6 6.6 12 2Z" fill="currentColor"/></svg></span></div><div class="tag">EHS assistant</div></div>
     </div>
 
     <div class="side-label">Workspace</div>
@@ -597,6 +636,7 @@ function renderModes(){
   Object.entries(MODES).forEach(([id,m])=>{
     const b=document.createElement('button');
     b.className='mode'+(id===state.mode&&state.view==='chat'?' active':'');
+    b.dataset.mode=id;
     b.innerHTML=`<svg viewBox="0 0 24 24" fill="none">${ICONS[id]}</svg><span class="lbl">${m.label}</span><span class="dot" style="background:${m.dot}"></span>`;
     b.onclick=()=>{state.mode=id;store.set('guardian.mode',id);setView('chat');renderSuggest();closeNav();input.focus();};
     modesEl.appendChild(b);
@@ -812,7 +852,7 @@ async function runTurn(text,focusLine){
   state.messages.push({role:'user',content:text});addMsg('user',text);persist();
   state.busy=true;toggleSend();setStatus('busy');
   const contentEl=addMsg('assistant','');
-  const cursor=document.createElement('span');cursor.className='cursor';contentEl.appendChild(cursor);
+  contentEl.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
   const system=SYS_BASE+'\n\n'+standardsLine()+'\n\nCurrent focus: '+focusLine;
   const history=state.messages.map(m=>({role:m.role,content:m.content}));
   let acc='';state.lastError=false;
@@ -847,15 +887,14 @@ async function runTurn(text,focusLine){
           }else if(evt.choices&&evt.choices[0]){
             const d=evt.choices[0].delta;if(d&&d.content)piece=d.content;
           }
-          if(piece){acc+=piece;contentEl.innerHTML=mdToHtml(acc);contentEl.appendChild(cursor);scroll.scrollTop=scroll.scrollHeight;}
+          if(piece){acc+=piece;contentEl.innerHTML=mdToHtml(acc)+'<span class="cursor"></span>';scroll.scrollTop=scroll.scrollHeight;}
         }catch(e){}
       }
     }
-    cursor.remove();
-    if(acc.trim()==='')contentEl.textContent='(No content returned.)';
+    if(acc.trim()==='')contentEl.textContent='(No content returned.)';else contentEl.innerHTML=mdToHtml(acc);
     state.messages.push({role:'assistant',content:acc});persist();
   }catch(err){
-    cursor.remove();state.lastError=true;
+    state.lastError=true;
     const off=offlineAnswer(text);
     contentEl.innerHTML=mdToHtml('**'+providerLabel()+' is unavailable right now** ('+esc(err.message)+'). Here\'s an offline response:\n\n'+off);
     state.messages.push({role:'assistant',content:'(offline) '+off});persist();
