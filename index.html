@@ -1845,8 +1845,11 @@ persistDaily=function(){_persistDaily();};
 
 /* ---- hidden master panel: Ctrl+Shift+M or 5 quick clicks on the brand mark; opens only for role=master ---- */
 let brandClicks=0,brandTimer=null,masterUnlocked=false;
-function tryOpenMaster(){
-  if(!sb||cloud.role!=='master')return;      /* silently ignore for everyone else */
+async function tryOpenMaster(){
+  if(!sb)return;
+  if(!cloud.user){showAuth(true);return;}          /* must sign in first — reveals nothing about admin */
+  try{await fetchProfile();setCloudBadge();}catch(e){}   /* re-read role live: SQL promotion works without re-login */
+  if(cloud.role!=='master')return;                 /* silently ignore for everyone else */
   $('#masterOverlay').classList.add('show');
   if(masterUnlocked)renderMaster();else renderMasterLock();
 }
