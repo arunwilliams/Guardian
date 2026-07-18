@@ -97,6 +97,12 @@
   .cap-ic{width:34px;height:34px;border-radius:9px;background:var(--surface-2);display:grid;place-items:center;flex:0 0 auto}
   .cap-ic svg{width:19px;height:19px}
   .cap:hover .cap-ic svg{transform:scale(1.12) rotate(-4deg);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+  .home-chips{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+  .role-chip{color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:5px 12px;letter-spacing:.03em}
+  .org-chip{border:1px solid var(--border-2);color:var(--text-2);font-size:11px;font-weight:600;border-radius:999px;padding:5px 12px;background:var(--surface)}
+  .home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .home-acts{display:flex;gap:8px;flex-wrap:wrap}
+  @media(max-width:560px){.home-stats{grid-template-columns:repeat(2,1fr)}}
   .cap b{font-weight:600;font-size:14.5px;display:block;margin-bottom:1px}
   .cap span{font-size:13px;color:var(--text-2);line-height:1.45}
   .note{margin-top:20px;font-size:13px;color:var(--text-3);line-height:1.5}
@@ -670,6 +676,16 @@
     <p class="m-sub">Organizations, users and roles. Every action here is enforced by database row-level security — the UI being hidden is not the security boundary.</p>
     <div id="masterBody" style="max-height:56vh;overflow-y:auto"></div>
     <div class="m-actions"><button class="btn-ghost" id="masterNewOrg">+ New organization</button><button class="btn-save" id="doneMaster" style="flex:1">Close</button></div>
+  </div>
+</div>
+
+<!-- Organization members (org_admin & master) -->
+<div class="overlay" id="teamOverlay">
+  <div class="modal set" style="max-width:440px">
+    <h2>Organization members</h2>
+    <p class="m-sub">People assigned to your organization and their roles.</p>
+    <div id="teamBody" style="max-height:52vh;overflow-y:auto"></div>
+    <div class="m-actions"><button class="btn-save" id="doneTeam" style="flex:1">Close</button></div>
   </div>
 </div>
 
@@ -1396,6 +1412,7 @@ function addMsg(role,text,opts={}){
 }
 function renderThread(){thread.innerHTML='';if(state.messages.length===0){renderEmpty();return}state.messages.forEach(m=>addMsg(m.role,m.content));}
 function renderEmpty(){
+  if(typeof cloudEnabled==='function'&&cloudEnabled()&&cloud.user){renderHome();return;}
   const e=document.createElement('div');e.className='empty';
   e.innerHTML=`<div class="hi glogo"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".5"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <h2>How can I help keep the site safe?</h2>
@@ -1410,6 +1427,52 @@ function renderEmpty(){
   thread.appendChild(e);
   const q=$('#quickFreeAI');if(q)q.onclick=ev=>{ev.preventDefault();openSettings();setProv='openai';renderProvTabs();renderProvFields();};
 }
+/* ---- signed-in dashboard home (role-based) ---- */
+const ROLE_META={master:{l:'Master admin',c:'#7C5CD6'},org_admin:{l:'Org admin',c:'var(--mandatory,#1F6FB2)'},ehs_executive:{l:'EHS Executive',c:'var(--accent)'}};
+function renderHome(){
+  const e=document.createElement('div');e.className='empty';
+  const name=(cloud.user.user_metadata&&cloud.user.user_metadata.full_name)||(cloud.user.email||'').split('@')[0];
+  const rm=ROLE_META[cloud.role]||{l:cloud.role||'member',c:'var(--text-3)'};
+  const {c,days}=dailyCum();
+  const stats=[
+    {v:days,l:'Days logged'},
+    {v:fmt(c.manhours),l:'Cumulative man-hours'},
+    {v:state.permit.status||'Draft',l:'Permit status'},
+    {v:(state.audit.ref||'—'),l:'Open audit'}
+  ];
+  const acts=[
+    {id:'go-daily',l:'Daily dashboard'},
+    {id:'go-permit',l:'Permit to work'},
+    {id:'go-audit',l:'Audit'}
+  ];
+  if(cloud.role==='org_admin'||cloud.role==='master')acts.push({id:'go-team',l:'Organization members'});
+  if(cloud.role==='master')acts.push({id:'go-adm',l:'Admin panel'});
+  e.innerHTML=`<div class="hi glogo"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".5"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h2>Welcome back, ${esc(name)}</h2>
+    <div class="home-chips"><span class="role-chip" style="background:${rm.c}">${rm.l}</span>${cloud.orgName?'<span class="org-chip">'+esc(cloud.orgName)+'</span>':'<span class="org-chip">No organization assigned yet</span>'}</div>
+    <div class="home-stats">${stats.map(s=>'<div class="kpi"><div class="kv" style="font-size:18px">'+esc(String(s.v))+'</div><div class="kl">'+s.l+'</div></div>').join('')}</div>
+    <div class="home-acts">${acts.map(a=>'<button class="pbtn" id="'+a.id+'">'+a.l+' →</button>').join('')}</div>
+    <p class="note">${isOffline()?'AI is offline — <a href="#" id="quickFreeAI">connect a free AI model →</a> Or just ask me anything below.':'Ask me anything below — incidents, risk, first aid, compliance.'}</p>`;
+  thread.appendChild(e);
+  const on=(id,fn)=>{const b=$('#'+id);if(b)b.onclick=fn;};
+  on('go-daily',()=>setView('daily'));on('go-permit',()=>setView('permit'));on('go-audit',()=>setView('audit'));
+  on('go-team',openTeam);on('go-adm',tryOpenMaster);
+  const q=$('#quickFreeAI');if(q)q.onclick=ev=>{ev.preventDefault();openSettings();setProv='openai';renderProvTabs();renderProvFields();};
+}
+async function openTeam(){
+  if(!sb||!cloud.user||!(cloud.role==='org_admin'||cloud.role==='master'))return;
+  $('#teamOverlay').classList.add('show');
+  const box=$('#teamBody');box.innerHTML='<div class="prov-test wait">Loading…</div>';
+  const {data,error}=await sb.from('profiles').select('full_name,role,org_id');
+  if(error){box.innerHTML='<div class="prov-test bad">'+esc(error.message)+'</div>';return;}
+  const members=(data||[]).filter(p=>p.org_id===cloud.org);
+  box.innerHTML=members.length?members.map(p=>{
+    const rm=ROLE_META[p.role]||{l:p.role,c:'var(--text-3)'};
+    return '<div class="doc-row"><div class="doc-meta"><b>'+esc(p.full_name||'—')+'</b></div><span class="role-chip" style="background:'+rm.c+'">'+rm.l+'</span></div>';
+  }).join('')+'<div class="doc-note">Roles and org assignments are managed by the master admin.</div>'
+  :'<div class="prov-test">No members assigned to this organization yet.</div>';
+}
+
 
 /* ---- chat pipeline ---- */
 function toggleSend(){sendBtn.disabled=state.busy||input.value.trim()===''}
@@ -1879,6 +1942,7 @@ async function afterSignIn(){
   if(location.hash&&/access_token=|refresh_token=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search);
   try{await fetchProfile();}catch(e){authMsg('Signed in as '+((cloud.user&&cloud.user.email)||'user')+', but couldn\'t load your profile ('+(e.message||e)+'). Ask your admin, or retry.','bad');return;}
   showAuth(false);setCloudBadge();cloudLoadDays();
+  if(state.messages.length===0&&state.view==='chat')renderThread();   /* show the dashboard home */
 }
 async function initCloud(){
   if(!cloudEnabled())return;
@@ -2057,7 +2121,22 @@ $('#masterNewOrg').onclick=async()=>{
   const name=prompt('Organization name:');if(!name)return;
   await sb.from('organizations').insert({name});renderMaster();
 };
-initCloud();
+/* team modal close */
+function closeTeam(){$('#teamOverlay').classList.remove('show')}
+$('#doneTeam').onclick=closeTeam;
+$('#teamOverlay').onclick=e=>{if(e.target===$('#teamOverlay'))closeTeam()};
+
+/* #adm route — /adm equivalent for a static site: open the admin panel by URL */
+function checkAdmRoute(){
+  if(/^#\/?adm$/i.test(location.hash)){
+    history.replaceState(null,'',location.pathname+location.search);
+    tryOpenMaster();   /* prompts sign-in if signed out; silent for non-masters; PIN-gated */
+  }
+}
+window.addEventListener('hashchange',checkAdmRoute);
+
+const _ic=initCloud();
+if(_ic&&_ic.then)_ic.then(checkAdmRoute);else checkAdmRoute();
 </script>
 </body>
 </html>
