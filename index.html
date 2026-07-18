@@ -103,6 +103,13 @@
   .home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
   .home-acts{display:flex;gap:8px;flex-wrap:wrap}
   @media(max-width:560px){.home-stats{grid-template-columns:repeat(2,1fr)}}
+  .req-chip{font-size:11px;font-weight:700;border-radius:999px;padding:6px 12px;letter-spacing:.02em}
+  .req-chip.pending{background:#FBF3E0;color:#9A6B00}
+  .req-chip.approved{background:#E8F5EC;color:var(--r-low)}
+  .req-chip.rejected{background:#FBEAEA;color:var(--r-crit)}
+  .mtabs{display:flex;gap:6px;margin-bottom:12px}
+  .mtab{border:1px solid var(--border-2);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--text-2);transition:.13s}
+  .mtab.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .cap b{font-weight:600;font-size:14.5px;display:block;margin-bottom:1px}
   .cap span{font-size:13px;color:var(--text-2);line-height:1.45}
   .note{margin-top:20px;font-size:13px;color:var(--text-3);line-height:1.5}
@@ -560,6 +567,8 @@
       </div>
       <div class="pbar">
         <span class="pleft" id="permitMeta">Baseline checks apply to every permit.</span>
+        <span class="req-chip" id="reqStatus" style="display:none"></span>
+        <button class="pbtn" id="permitSubmit" style="display:none"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M4 12h15m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Submit for approval</button>
         <button class="pbtn" id="permitReset">Reset</button>
         <button class="pbtn" id="permitPrint"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-2m-12 0v3h12v-3m-12 0h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Print</button>
         <button class="pbtn primary" id="permitReview"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Review with Guardian</button>
@@ -686,6 +695,16 @@
     <p class="m-sub">People assigned to your organization and their roles.</p>
     <div id="teamBody" style="max-height:52vh;overflow-y:auto"></div>
     <div class="m-actions"><button class="btn-save" id="doneTeam" style="flex:1">Close</button></div>
+  </div>
+</div>
+
+<!-- Permit approvals (org_admin & master) -->
+<div class="overlay" id="approvalsOverlay">
+  <div class="modal set" style="max-width:600px">
+    <h2>Permit approvals</h2>
+    <p class="m-sub">Requests from your organization. Approve or reject with a note — decisions are enforced and recorded server-side.</p>
+    <div id="approvalsBody" style="max-height:56vh;overflow-y:auto"></div>
+    <div class="m-actions"><button class="btn-save" id="doneApprovals" style="flex:1">Close</button></div>
   </div>
 </div>
 
@@ -944,6 +963,7 @@ function setView(v){
   $('#dailyNav').classList.toggle('active',v==='daily');
   if(v==='permit'){
     if(typeof ensurePermitInit==='function')ensurePermitInit();
+    if(typeof updatePermitCloudUI==='function')updatePermitCloudUI();
     document.querySelectorAll('#modes .mode').forEach(x=>x.classList.remove('active'));
     $('#ctxTitle').textContent='Permit to work';
     $('#ctxSub').textContent='Fill the PTW, review it with Guardian, then print.';
@@ -1445,7 +1465,7 @@ function renderHome(){
     {id:'go-permit',l:'Permit to work'},
     {id:'go-audit',l:'Audit'}
   ];
-  if(cloud.role==='org_admin'||cloud.role==='master')acts.push({id:'go-team',l:'Organization members'});
+  if(cloud.role==='org_admin'||cloud.role==='master')acts.push({id:'go-team',l:'Organization members'},{id:'go-approvals',l:'Permit approvals'});
   if(cloud.role==='master')acts.push({id:'go-adm',l:'Admin panel'});
   e.innerHTML=`<div class="hi glogo"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".5"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <h2>Welcome back, ${esc(name)}</h2>
@@ -1456,7 +1476,7 @@ function renderHome(){
   thread.appendChild(e);
   const on=(id,fn)=>{const b=$('#'+id);if(b)b.onclick=fn;};
   on('go-daily',()=>setView('daily'));on('go-permit',()=>setView('permit'));on('go-audit',()=>setView('audit'));
-  on('go-team',openTeam);on('go-adm',tryOpenMaster);
+  on('go-team',openTeam);on('go-adm',tryOpenMaster);on('go-approvals',openApprovals);
   const q=$('#quickFreeAI');if(q)q.onclick=ev=>{ev.preventDefault();openSettings();setProv='openai';renderProvTabs();renderProvFields();};
 }
 async function openTeam(){
@@ -2038,6 +2058,77 @@ persistDaily=function(){_persistDaily();};
   $('#dailyDelete').onclick=()=>{if(guestGate('Editing the site register'))return;origDel();};
 })();
 
+/* ---- permit request & approval workflow ---- */
+function canApprove(){return cloud.role==='master'||cloud.role==='org_admin'}
+function updatePermitCloudUI(){
+  const btn=$('#permitSubmit');if(!btn)return;
+  btn.style.display=(sb&&cloud.user&&cloud.org)?'inline-flex':'none';
+  refreshMyRequest();
+}
+async function submitPermitRequest(){
+  if(!sb||!cloud.user||!cloud.org){alert('Sign in with an organization assigned to submit permits for approval.');return;}
+  const name=(cloud.user.user_metadata&&cloud.user.user_metadata.full_name)||cloud.user.email;
+  const {data,error}=await sb.from('permit_requests').insert({
+    org_id:cloud.org,requested_by:cloud.user.id,requester_name:name,
+    permit_no:state.permit.header.permitNo||'(no number)',
+    work_types:activeSections().map(s=>PERMIT_CHECKS[s].title).join(', '),
+    data:state.permit
+  }).select('id').single();
+  if(error){alert('Could not submit: '+error.message+'\nIf the table is missing, run the "Permit request & approval workflow" section of supabase-setup.sql.');return;}
+  store.set('guardian.lastReq',data.id);
+  state.permit.status='Assessed';persistPermit();if(typeof renderStatusBar==='function'&&permitInit)renderStatusBar();
+  refreshMyRequest();
+}
+async function refreshMyRequest(){
+  const chip=$('#reqStatus');if(!chip)return;
+  chip.style.display='none';
+  if(!sb||!cloud.user)return;
+  const id=store.get('guardian.lastReq');
+  let q=sb.from('permit_requests').select('id,status,decision_note,permit_no').order('created_at',{ascending:false}).limit(1);
+  if(id)q=sb.from('permit_requests').select('id,status,decision_note,permit_no').eq('id',id);
+  const {data}=await q;
+  const r=data&&data[0];if(!r)return;
+  chip.className='req-chip '+r.status;
+  chip.textContent='Request '+r.status+(r.decision_note?' · '+r.decision_note:'');
+  chip.style.display='inline-block';
+  if(r.status==='approved'&&['Draft','Assessed'].includes(state.permit.status)){state.permit.status='Approved';persistPermit();if(permitInit)renderStatusBar();}
+}
+$('#permitSubmit').onclick=submitPermitRequest;
+async function renderApprovalsList(box,showOrg){
+  box.innerHTML='<div class="prov-test wait">Loading…</div>';
+  const {data,error}=await sb.from('permit_requests')
+    .select('id,org_id,requester_name,permit_no,work_types,status,decision_note,created_at')
+    .order('created_at',{ascending:false}).limit(30);
+  if(error){box.innerHTML='<div class="prov-test bad">'+esc(error.message)+' — run the "Permit request & approval workflow" SQL section.</div>';return;}
+  if(!data||!data.length){box.innerHTML='<div class="prov-test">No permit requests yet.</div>';return;}
+  box.innerHTML='';
+  data.forEach(r=>{
+    const row=document.createElement('div');row.className='doc-row';
+    row.innerHTML='<div class="doc-meta"><b>'+esc(r.permit_no||'(no number)')+' <span class="req-chip '+r.status+'" style="margin-left:6px">'+r.status+'</span></b>'
+      +'<span>'+esc(r.requester_name||'—')+' · '+esc(r.work_types||'')+' · '+new Date(r.created_at).toLocaleString()
+      +(r.decision_note?' · note: '+esc(r.decision_note):'')+'</span></div>'
+      +(r.status==='pending'&&canApprove()?'<div class="doc-acts"><button class="doc-btn" data-a="ok">Approve</button><button class="doc-btn" data-a="no">Reject</button></div>':'');
+    const decide=async(status)=>{
+      const note=prompt(status==='approved'?'Approval note (optional):':'Reason for rejection:')||'';
+      if(status==='rejected'&&!note)return;
+      const {error:e2}=await sb.from('permit_requests').update({status,decision_note:note||null,decided_by:cloud.user.id,decided_at:new Date().toISOString()}).eq('id',r.id);
+      if(e2){alert(e2.message);return;}
+      renderApprovalsList(box,showOrg);
+    };
+    const ok=row.querySelector('[data-a="ok"]');if(ok)ok.onclick=()=>decide('approved');
+    const no=row.querySelector('[data-a="no"]');if(no)no.onclick=()=>decide('rejected');
+    box.appendChild(row);
+  });
+}
+function closeApprovals(){$('#approvalsOverlay').classList.remove('show')}
+function openApprovals(){
+  if(!sb||!cloud.user||!canApprove())return;
+  $('#approvalsOverlay').classList.add('show');
+  renderApprovalsList($('#approvalsBody'),cloud.role==='master');
+}
+$('#doneApprovals').onclick=closeApprovals;
+$('#approvalsOverlay').onclick=e=>{if(e.target===$('#approvalsOverlay'))closeApprovals()};
+
 /* ---- hidden master panel: Ctrl+Shift+M or 5 quick clicks on the brand mark; opens only for role=master ---- */
 let brandClicks=0,brandTimer=null,masterUnlocked=false;
 async function tryOpenMaster(){
@@ -2090,8 +2181,20 @@ document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerC
 function closeMaster(){$('#masterOverlay').classList.remove('show')}
 $('#doneMaster').onclick=closeMaster;
 $('#masterOverlay').onclick=e=>{if(e.target===$('#masterOverlay'))closeMaster()};
-async function renderMaster(){
-  const box=$('#masterBody');box.innerHTML='<div class="prov-test wait">Loading…</div>';
+let masterTab='users';
+function renderMaster(){
+  const box=$('#masterBody');
+  box.innerHTML='<div class="mtabs">'
+    +'<button class="mtab'+(masterTab==='users'?' on':'')+'" data-t="users">Users &amp; organizations</button>'
+    +'<button class="mtab'+(masterTab==='reqs'?' on':'')+'" data-t="reqs">Permit requests</button>'
+    +'</div><div id="masterTabBody"></div>';
+  box.querySelectorAll('.mtab').forEach(b=>b.onclick=()=>{masterTab=b.dataset.t;renderMaster();});
+  const body=$('#masterTabBody');
+  if(masterTab==='reqs')renderApprovalsList(body,true);
+  else renderMasterUsers(body);
+}
+async function renderMasterUsers(box){
+  box.innerHTML='<div class="prov-test wait">Loading…</div>';
   const [{data:orgs},{data:profs}]=await Promise.all([
     sb.from('organizations').select('id,name'),
     sb.from('profiles').select('id,full_name,role,org_id')
