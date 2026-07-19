@@ -233,22 +233,47 @@ async function renderUsers(){
   const box=$('#tabBody');box.innerHTML='<div class="msg wait">Loading…</div>';
   const [{data:orgs,error:e1},{data:profs,error:e2}]=await Promise.all([
     sb.from('organizations').select('id,name').order('name'),
-    sb.from('profiles').select('id,full_name,role,org_id')
+    sb.from('profiles').select('id,full_name,role,org_id,title')
   ]);
   if(e1||e2){box.innerHTML='<div class="msg bad">'+esc((e1||e2).message)+'</div>';return;}
   const orgOpt=o=>'<option value="">— no org —</option>'+orgs.map(x=>'<option value="'+x.id+'"'+(x.id===o?' selected':'')+'>'+esc(x.name)+'</option>').join('');
-  box.innerHTML='<div class="sec">Organizations ('+orgs.length+') <button class="btn ghost" id="newOrg" style="margin-left:10px">+ New</button></div>'
+  const TITLES={'EHS Officer':'ehs_executive','Permit Holder':'ehs_executive','Site Engineer':'ehs_executive','SME':'sme','Project Manager':'org_admin','Other':'viewer'};
+  box.innerHTML='<div class="sec">Add user</div>'
+    +'<div class="row" id="addUserRow" style="align-items:flex-end">'
+    +'<div class="meta" style="min-width:130px"><b style="font-size:11px;color:var(--text-2);font-weight:600">Full name</b><input id="nu_name" style="width:100%;border:1px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg)" /></div>'
+    +'<div class="meta" style="min-width:170px"><b style="font-size:11px;color:var(--text-2);font-weight:600">Email</b><input id="nu_email" type="email" style="width:100%;border:1px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg)" /></div>'
+    +'<div class="meta" style="min-width:120px"><b style="font-size:11px;color:var(--text-2);font-weight:600">Temp password</b><input id="nu_pw" style="width:100%;border:1px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--bg)" class="mono" /></div>'
+    +'<select id="nu_title">'+Object.keys(TITLES).map(t=>'<option>'+t+'</option>').join('')+'</select>'
+    +'<select id="nu_org"><option value="">— org —</option>'+orgs.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join('')+'</select>'
+    +'<button class="act" id="nu_go">Create</button>'
+    +'</div><div class="msg" id="nu_msg"></div>'
+    +'<div class="sec">Organizations ('+orgs.length+') <button class="btn ghost" id="newOrg" style="margin-left:10px">+ New</button></div>'
     +(orgs.map(o=>'<div class="row"><div class="meta"><b>'+esc(o.name)+'</b><span>'+profs.filter(p=>p.org_id===o.id).length+' member(s)</span></div></div>').join('')||'<div class="msg wait">None yet.</div>')
     +'<div class="sec">Users ('+profs.length+')</div>'
-    +profs.map(p=>'<div class="row" data-uid="'+p.id+'"><div class="meta"><b>'+esc(p.full_name||p.id.slice(0,8))+'</b><span>'+esc(p.role)+'</span></div>'
+    +profs.map(p=>'<div class="row" data-uid="'+p.id+'"><div class="meta"><b>'+esc(p.full_name||p.id.slice(0,8))+'</b><span>'+esc(p.title||'—')+' · '+esc(p.role)+'</span></div>'
       +'<select data-f="role">'+ROLES.map(r=>'<option'+(p.role===r?' selected':'')+'>'+r+'</option>').join('')+'</select>'
       +'<select data-f="org">'+orgOpt(p.org_id)+'</select>'
       +'<button class="act" data-f="save">Save</button></div>').join('')
-    +'<div class="note">Duties: viewer = dashboard only · ehs_executive = requester · sme = review &amp; suggestions · org_admin = verify &amp; issue · master = everything. Create accounts in Supabase → Authentication (or let people sign up); they appear here after first sign-in.</div>';
+    +'<div class="note">Duties: viewer = dashboard only · ehs_executive = requester · sme = review &amp; suggestions · org_admin = verify &amp; issue · master = everything. Use “Add user” above to create accounts — job title sets the default duty (adjustable per row). Share the temp password securely; users can change it later.</div>';
   $('#newOrg').onclick=async()=>{
     const name=prompt('Organization name:');if(!name)return;
     const {error}=await sb.from('organizations').insert({name});
     if(error)alert(error.message);renderUsers();
+  };
+  $('#nu_go').onclick=async()=>{
+    const name=$('#nu_name').value.trim(),email=$('#nu_email').value.trim(),pw=$('#nu_pw').value,
+          title=$('#nu_title').value,org=$('#nu_org').value||null,duty=TITLES[title]||'viewer';
+    if(!name||!email||pw.length<6){msg('#nu_msg','Name, email and a temp password of 6+ characters are required.','bad');return;}
+    msg('#nu_msg','Creating account…','wait');
+    /* isolated client: creating the account must not replace the admin session */
+    const tmp=window.supabase.createClient(CLOUD.url,CLOUD.anonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    const {data,error}=await tmp.auth.signUp({email,password:pw,options:{data:{full_name:name,title}}});
+    if(error){msg('#nu_msg',error.message+(/(signups?|disabled)/i.test(error.message)?' — enable "Allow new users to sign up" in Supabase → Authentication → Sign In / Providers → Email.':''),'bad');return;}
+    const uid=data.user&&data.user.id;
+    if(uid){const {error:e2}=await sb.from('profiles').update({role:duty,org_id:org,title}).eq('id',uid);
+      if(e2){msg('#nu_msg','Account created, but duty assignment failed: '+e2.message,'bad');renderUsers();return;}}
+    msg('#nu_msg','Created '+email+' as '+title+' ('+duty+')'+(data.session?'':' — if email confirmation is ON, they must confirm before first sign-in')+'. Share the temp password securely.','ok');
+    loadConsole();
   };
   box.querySelectorAll('[data-uid]').forEach(row=>{
     row.querySelector('[data-f="save"]').onclick=async()=>{
