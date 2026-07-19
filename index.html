@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0F766E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Guardian" />
+<link rel="manifest" href='data:application/manifest+json,{"name":"Guardian EHS","short_name":"Guardian","start_url":".","display":"standalone","background_color":"#FBFBFA","theme_color":"#0F766E","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=&apos;http://www.w3.org/2000/svg&apos; viewBox=&apos;0 0 24 24&apos;%3E%3Crect width=&apos;24&apos; height=&apos;24&apos; rx=&apos;5&apos; fill=&apos;%230F766E&apos;/%3E%3Cpath d=&apos;M12 3.5 5.5 6v5c0 4 2.8 6.8 6.5 8.8 3.7-2 6.5-4.8 6.5-8.8V6L12 3.5Z&apos; fill=&apos;none&apos; stroke=&apos;white&apos; stroke-width=&apos;1.4&apos;/%3E%3Cpath d=&apos;m9.3 11.8 1.8 1.8 3.6-3.6&apos; stroke=&apos;white&apos; stroke-width=&apos;1.5&apos; fill=&apos;none&apos; stroke-linecap=&apos;round&apos;/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any"}]}' />
 <title>Guardian · EHS Assistant</title>
 <meta name="description" content="Guardian — a clean AI assistant for EHS teams: incident triage, risk assessment, compliance, and permits to work." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -114,12 +120,15 @@
   .find-row input,.find-row select{border:1px solid var(--border-2);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;background:var(--bg);color:var(--text)}
   .find-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
   .find-row .f-x{padding:8px 0;text-align:center}
-  @media(max-width:820px){.find-row{grid-template-columns:74px 1fr 34px}.find-row .f-a,.find-row .f-o,.find-row .f-due{grid-column:span 1}}
+  @media(max-width:820px){.find-row{grid-template-columns:86px 1fr 1fr 40px;grid-template-areas:'t d d x' 'a a o o' 'due due o2 o2'}.find-row .f-t{grid-area:t}.find-row .f-d{grid-area:d}.find-row .f-x{grid-area:x}.find-row .f-a{grid-area:a}.find-row .f-o{grid-area:o}.find-row .f-due{grid-area:due}.find-row{border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--surface)}}
   .sec-prog{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--text-3);font-weight:500}
   .sec-prog.full{color:var(--r-low)}
   .pcard h3{display:flex;align-items:center;gap:8px}
   .meter{display:inline-block;width:90px;height:6px;border-radius:999px;background:var(--border);vertical-align:middle;margin-right:8px;overflow:hidden}
   .meter i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .25s}
+  #askFab{position:fixed;right:22px;bottom:86px;z-index:35;display:flex;align-items:center;gap:9px;border:none;background:var(--accent);color:#fff;font-weight:600;font-size:13.5px;border-radius:999px;padding:12px 18px;box-shadow:0 6px 22px var(--accent-ring),var(--shadow);transition:.15s}
+  #askFab:hover{background:var(--accent-hover);transform:translateY(-2px)}
+  @media(max-width:560px){#askFab{right:14px;bottom:78px;padding:11px 15px}}
   .cap b{font-weight:600;font-size:14.5px;display:block;margin-bottom:1px}
   .cap span{font-size:13px;color:var(--text-2);line-height:1.45}
   .note{margin-top:20px;font-size:13px;color:var(--text-3);line-height:1.5}
@@ -404,6 +413,38 @@
   .av-shield .g-core{animation:avblink 2.8s ease-in-out infinite}
   @keyframes avblink{0%,88%,100%{opacity:1}92%,96%{opacity:.15}}
 
+  /* ---------- mobile & webapp polish ---------- */
+  html{overscroll-behavior:none}
+  *{-webkit-tap-highlight-color:transparent}
+  .doc-row{flex-wrap:wrap}
+  .doc-acts{flex-wrap:wrap;justify-content:flex-end}
+  .status-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none}
+  .status-bar::-webkit-scrollbar{display:none}
+  .st{flex:0 0 auto}
+  .modal{max-height:90vh;overflow-y:auto}
+  .composer{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+  .pbar{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .sidebar{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  #askFab{bottom:calc(96px + env(safe-area-inset-bottom))}
+  @media(display-mode:standalone){header.topbar{padding-top:env(safe-area-inset-top)}.sidebar{padding-top:calc(18px + env(safe-area-inset-top))}}
+  @media(max-width:820px){
+    .pbar{flex-wrap:wrap;gap:8px}
+    .pbar .pleft{flex:1 1 100%;order:-1}
+    .pbar .pbtn{flex:1 1 auto;justify-content:center}
+    #askFab{bottom:calc(128px + env(safe-area-inset-bottom))}
+  }
+  @media(max-width:560px){
+    .fld input,.fld select,.fld textarea,.field input,.find-row input,.find-row select,textarea#input{font-size:16px}
+    .tri button{padding:9px 13px;font-size:12.5px}
+    .gas-grid{grid-template-columns:repeat(2,1fr)}
+    .num-grid .fld input{font-size:16px}
+    .check{gap:8px}
+    .doc-btn{padding:8px 12px}
+    .mtabs{flex-wrap:wrap}
+    .empty .lede{font-size:14px}
+    .home-acts .pbtn{flex:1 1 46%;justify-content:center}
+  }
+
   #printArea{display:none}
   @media print{
     .app,.overlay,.backdrop{display:none!important}
@@ -569,6 +610,17 @@
           </div>
 
           <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--mandatory,#1F6FB2)"></span>Attachments <span style="font-weight:450;color:var(--text-3);font-size:12px;margin-left:4px">drawings · RA · ICC · photos</span></h3>
+            <input id="p_att" type="file" multiple accept=".pdf,.xls,.xlsx,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif" style="display:none" />
+            <input id="p_cam" type="file" accept="image/*" capture="environment" style="display:none" />
+            <div style="display:flex;gap:8px">
+              <button class="pbtn" id="pAttPick" style="flex:1;justify-content:center">Add files</button>
+              <button class="pbtn" id="pCam">Take photo</button>
+            </div>
+            <div id="pAttList" style="margin-top:10px"></div>
+          </div>
+
+          <div class="pcard">
             <h3><span class="tagdot" style="background:var(--mandatory,#1F6FB2)"></span>PPE required</h3>
             <div class="ppe-grid" id="ppeGrid"></div>
             <div class="fld full" style="margin-top:12px"><label>Additional / special PPE</label><input id="p_ppeExtra" placeholder="Anything not listed above" /></div>
@@ -612,7 +664,11 @@
           <div class="pcard">
             <h3><span class="tagdot" style="background:var(--mandatory,#1F6FB2)"></span>Evidence <span style="font-weight:450;color:var(--text-3);font-size:12px;margin-left:4px">PDF · Excel · Word · images only</span></h3>
             <input id="a_files" type="file" multiple accept=".pdf,.xls,.xlsx,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif" style="display:none" />
-            <button class="pbtn" id="aPick" style="width:100%;justify-content:center"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M12 16V4m0 0-4 4m4-4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Add evidence files</button>
+            <input id="a_cam" type="file" accept="image/*" capture="environment" style="display:none" />
+            <div style="display:flex;gap:8px">
+              <button class="pbtn" id="aPick" style="flex:1;justify-content:center"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M12 16V4m0 0-4 4m4-4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Add evidence files</button>
+              <button class="pbtn" id="aCam"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M4 8h3l2-2h6l2 2h3v12H4V8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.5"/></svg>Take photo</button>
+            </div>
             <div id="aFileList" style="margin-top:10px"></div>
             <div class="doc-note" id="aUpNote">Files attach to this audit for the printed report. Signed-in members can also upload them to the organization's secure evidence store.</div>
           </div>
@@ -643,6 +699,16 @@
             <div class="num-grid" id="numGrid"></div>
           </div>
           <div class="pcard">
+            <h3><span class="tagdot" style="background:var(--mandatory,#1F6FB2)"></span>Day attachments <span style="font-weight:450;color:var(--text-3);font-size:12px;margin-left:4px">site photos · reports</span></h3>
+            <input id="d_att" type="file" multiple accept=".pdf,.xls,.xlsx,.doc,.docx,.png,.jpg,.jpeg,.webp,.gif" style="display:none" />
+            <input id="d_cam" type="file" accept="image/*" capture="environment" style="display:none" />
+            <div style="display:flex;gap:8px">
+              <button class="pbtn" id="dAttPick" style="flex:1;justify-content:center">Add files</button>
+              <button class="pbtn" id="dCam">Take photo</button>
+            </div>
+            <div id="dAttList" style="margin-top:10px"></div>
+          </div>
+          <div class="pcard">
             <h3><span class="tagdot" style="background:var(--r-low)"></span>Recent days</h3>
             <div style="overflow-x:auto"><table class="mini-table" id="recentTable"></table></div>
           </div>
@@ -650,6 +716,7 @@
       </div>
       <div class="pbar">
         <span class="pleft" id="dailyMeta"></span>
+        <button class="pbtn" id="dailyCsv">Export CSV</button>
         <button class="pbtn" id="dailyDelete">Delete day</button>
         <button class="pbtn" id="dailyPrint"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-2m-12 0v3h12v-3m-12 0h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Print report</button>
         <button class="pbtn primary" id="dailySave"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Save day</button>
@@ -659,6 +726,11 @@
 </div>
 
 <div id="printArea"></div>
+
+<button id="askFab" style="display:none">
+  <span class="glogo av-shield"><svg viewBox="0 0 24 24" fill="none" width="17" height="17"><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  Ask Guardian
+</button>
 
 <!-- Auth overlay (shown only when cloud is configured) -->
 <div class="overlay" id="authOverlay" style="z-index:80">
@@ -952,6 +1024,7 @@ Operating rules:
 - For a permit to work: audit completeness, flag every failed or missing control, check PPE against the work type, and give a clear authorise / do-not-authorise verdict.
 - Ask for the few missing facts that materially change the answer instead of guessing.
 - Format for fast reading: short paragraphs, bold key terms, tight lists. Keep it decision-focused.
+- Data analytics: you can write PySpark and Spark SQL for EHS analytics. The app's daily register exports CSV with columns: date, manpower, manhours, inductions, tbt, trainings, audits, inspections, sitewalks, quality, obsRaised, obsClosed, nearmiss, firstaid, permits, remarks. When asked about analytics or Apache Spark integration, produce runnable PySpark/Spark SQL against that schema (trends, LTIFR/TRIR from manhours, rolling KPIs) and explain the pipeline briefly.
 - You are decision support, not a substitute for a qualified professional, site-specific procedures, or legal advice. Say so when a question truly needs a licensed expert or the regulation's exact text.`;
 
 const thread=$('#thread'),scroll=$('#scroll'),input=$('#input'),sendBtn=$('#send'),suggest=$('#suggest'),modesEl=$('#modes');
@@ -966,6 +1039,7 @@ function setView(v){
   $('#auditNav').classList.toggle('active',v==='audit');
   $('#permitNav').classList.toggle('active',v==='permit');
   $('#dailyNav').classList.toggle('active',v==='daily');
+  const fab=$('#askFab');if(fab)fab.style.display=(v!=='chat')?'flex':'none';
   if(v==='permit'){
     if(typeof ensurePermitInit==='function')ensurePermitInit();
     if(typeof updatePermitCloudUI==='function')updatePermitCloudUI();
@@ -1141,6 +1215,7 @@ function serializePermit(){
   out+=`Gas test: O2 ${p.gas.o2||'—'}% | LEL ${p.gas.lel||'—'}% | CO ${p.gas.co||'—'} ppm | H2S ${p.gas.h2s||'—'} ppm | at ${p.gas.time||'—'} by ${p.gas.by||'—'}\n`;
   const stds=STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label).join('; ');
   out+=`Audit & compliance: ${p.audit.all?('comply to all selected standards ('+(stds||'none')+')'):'NOT marked as complying to all selected standards'}${p.audit.custom?'; custom audits: '+p.audit.custom:''}\n`;
+  if(attPermit.files.length)out+=`Attachments: ${attPermit.files.map(f=>f.name+(f.uploaded?' (uploaded)':'')).join(', ')}\n`;
   return out;
 }
 function buildPrint(){
@@ -1163,6 +1238,7 @@ function buildPrint(){
       <tr><td>SIMOPS check</td><td colspan="3">${esc(p.refs.simops)||'—'}</td></tr>
       <tr><td>Gas test</td><td colspan="3">O₂ ${esc(p.gas.o2)||'—'}% · LEL ${esc(p.gas.lel)||'—'}% · CO ${esc(p.gas.co)||'—'} ppm · H₂S ${esc(p.gas.h2s)||'—'} ppm · at ${esc(p.gas.time)||'—'} by ${esc(p.gas.by)||'—'}</td></tr>
       <tr><td>Audit &amp; compliance</td><td colspan="3">${p.audit.all?'Complies with all selected standards: '+(STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label).join('; ')||'none selected'):'Not marked as complying to all selected standards'}${p.audit.custom?' · Custom audits: '+esc(p.audit.custom):''}</td></tr>
+      <tr><td>Attachments</td><td colspan="3">${attPermit.files.length?attPermit.files.map(f=>esc(f.name)+(f.uploaded?' (uploaded)':'')).join(' · '):'—'}</td></tr>
       <tr><td>Description</td><td colspan="3">${esc(h.description)||'—'}</td></tr>
     </tbody></table>
     ${secHtml}
@@ -1212,9 +1288,9 @@ function reviewPermitOffline(){
 $('#permitReview').onclick=()=>{closeNav();if(isOffline()){reviewPermitOffline();}else{setView('chat');runTurn('Please review this Permit to Work.\n\n'+serializePermit(),PERMIT_FOCUS);}};
 $('#permitPrint').onclick=()=>{$('#printArea').innerHTML=buildPrint();window.print();};
 $('#permitReset').onclick=()=>{if(!confirm('Clear this permit?'))return;state.permit=defaultPermit();persistPermit();bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();};
-$('#permitNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The permit-to-work system (contains site-sensitive data)'))return;setView('permit');closeNav();};
+$('#permitNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The permit-to-work system (contains site-sensitive data)'))return;if(roleGate('permit','The permit-to-work system'))return;setView('permit');closeNav();};
 $('#dailyNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The site register & dashboard'))return;setView('daily');closeNav();};
-$('#auditNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The audit module (contains site-sensitive data)'))return;setView('audit');closeNav();};
+$('#auditNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The audit module (contains site-sensitive data)'))return;if(roleGate('audit','The audit module'))return;setView('audit');closeNav();};
 
 /* ---- audit form ---- */
 const defaultAudit=()=>({ref:'',date:'',scope:'',auditor:'',criteria:'',all:true,custom:'',items:[]});
@@ -1222,9 +1298,51 @@ state.audit=(function(){const a=JSON.parse(store.get('guardian.audit')||'null')|
   if(!Array.isArray(m.items))m.items=[];
   if(!m.items.length&&(a.findings||a.actions))m.items.push({t:'Obs',d:a.findings||'',a:a.actions||'',o:'',due:''});  /* migrate old free-text */
   return m;})();
-let auditFiles=[];   /* File objects live in memory for this session */
-const AUDIT_ALLOWED={pdf:'PDF',xls:'Excel',xlsx:'Excel',doc:'Word',docx:'Word',png:'Image',jpg:'Image',jpeg:'Image',webp:'Image',gif:'Image'};
-const AUDIT_MAX_MB=15;
+/* ---- reusable attachments engine (PDF / Excel / Word / images) ---- */
+const ATT_ALLOWED={pdf:'PDF',xls:'Excel',xlsx:'Excel',doc:'Word',docx:'Word',png:'Image',jpg:'Image',jpeg:'Image',webp:'Image',gif:'Image'};
+const ATT_MAX_MB=15;
+function fmtSize(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+function createAttachments(o){ /* o:{input,cam,pick,camBtn,list,folder:()=>string,empty,onChange} */
+  const inst={files:[]};
+  const input=$(o.input),list=$(o.list);
+  $(o.pick).onclick=()=>input.click();
+  input.onchange=e=>{add([...e.target.files]);e.target.value='';};
+  if(o.cam&&$(o.cam)){$(o.camBtn).onclick=()=>$(o.cam).click();$(o.cam).onchange=e=>{add([...e.target.files]);e.target.value='';};}
+  function add(fs){
+    const rejected=[];
+    fs.forEach(f=>{
+      const ext=(f.name.split('.').pop()||'').toLowerCase();
+      if(!ATT_ALLOWED[ext]){rejected.push(f.name+' (type not allowed)');return;}
+      if(f.size>ATT_MAX_MB*1024*1024){rejected.push(f.name+' (over '+ATT_MAX_MB+' MB)');return;}
+      inst.files.push({file:f,name:f.name,kind:ATT_ALLOWED[ext],size:f.size,uploaded:false});
+    });
+    render();
+    if(rejected.length)alert('Not attached — only PDF, Excel, Word and images up to '+ATT_MAX_MB+' MB:\n\n'+rejected.join('\n'));
+  }
+  function render(){
+    list.innerHTML='';
+    if(!inst.files.length){list.innerHTML='<div style="font-size:12px;color:var(--text-3)">'+(o.empty||'No files attached yet.')+'</div>';}
+    inst.files.forEach((f,i)=>{
+      const row=document.createElement('div');row.className='doc-row';
+      row.innerHTML='<div class="doc-meta"><b>'+esc(f.name)+'</b><span>'+f.kind+' · '+fmtSize(f.size)+(f.uploaded?' · uploaded ✓':'')+'</span></div>'
+        +'<div class="doc-acts">'+(sb&&cloud.user&&cloud.org&&!f.uploaded?'<button class="doc-btn" data-a="u">Upload</button>':'')+'<button class="doc-btn" data-a="x">Remove</button></div>';
+      const up=row.querySelector('[data-a="u"]');
+      if(up)up.onclick=async()=>{
+        up.textContent='…';
+        const path=cloud.org+'/'+o.folder().replace(/[^\w\/-]+/g,'_')+'/'+Date.now()+'_'+f.name.replace(/[^\w.-]+/g,'_');
+        const {error}=await sb.storage.from('evidence').upload(path,f.file);
+        if(error){up.textContent='Upload';alert('Upload failed: '+error.message+'\nRun the "Evidence storage" section of supabase-setup.sql if you haven\'t.');return;}
+        f.uploaded=true;render();
+      };
+      row.querySelector('[data-a="x"]').onclick=()=>{inst.files.splice(i,1);render();};
+      list.appendChild(row);
+    });
+    if(o.onChange)o.onChange();
+  }
+  inst.render=render;render();
+  return inst;
+}
+let attAudit={files:[],render:()=>{}},attPermit={files:[],render:()=>{}},attDaily={files:[],render:()=>{}};
 function persistAudit(){store.set('guardian.audit',JSON.stringify(state.audit))}
 let auditInit=false;
 function ensureAuditInit(){
@@ -1238,40 +1356,9 @@ function ensureAuditInit(){
     $('#aStdList').textContent=STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label.split('—').pop().trim()).join(', ')||'none selected';};
   at.onclick=()=>{state.audit.all=!state.audit.all;persistAudit();sync();};
   sync();
-  $('#aPick').onclick=()=>$('#a_files').click();
-  $('#a_files').onchange=e=>{addAuditFiles([...e.target.files]);e.target.value='';};
-  renderAuditFiles();updateAuditMeta();
-}
-function addAuditFiles(list){
-  const rejected=[];
-  list.forEach(f=>{
-    const ext=(f.name.split('.').pop()||'').toLowerCase();
-    if(!AUDIT_ALLOWED[ext]){rejected.push(f.name+' (type not allowed)');return;}
-    if(f.size>AUDIT_MAX_MB*1024*1024){rejected.push(f.name+' (over '+AUDIT_MAX_MB+' MB)');return;}
-    auditFiles.push({file:f,name:f.name,kind:AUDIT_ALLOWED[ext],size:f.size,uploaded:false});
-  });
-  renderAuditFiles();updateAuditMeta();
-  if(rejected.length)alert('Not attached — only PDF, Excel, Word and images up to '+AUDIT_MAX_MB+' MB:\n\n'+rejected.join('\n'));
-}
-function fmtSize(b){return b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
-function renderAuditFiles(){
-  const box=$('#aFileList');box.innerHTML='';
-  if(!auditFiles.length){box.innerHTML='<div style="font-size:12px;color:var(--text-3)">No evidence attached yet.</div>';return;}
-  auditFiles.forEach((f,i)=>{
-    const row=document.createElement('div');row.className='doc-row';
-    row.innerHTML='<div class="doc-meta"><b>'+esc(f.name)+'</b><span>'+f.kind+' · '+fmtSize(f.size)+(f.uploaded?' · uploaded ✓':'')+'</span></div>'
-      +'<div class="doc-acts">'+(sb&&cloud.user&&cloud.org&&!f.uploaded?'<button class="doc-btn" data-a="u">Upload</button>':'')+'<button class="doc-btn" data-a="x">Remove</button></div>';
-    const up=row.querySelector('[data-a="u"]');
-    if(up)up.onclick=async()=>{
-      up.textContent='…';
-      const path=cloud.org+'/'+((state.audit.ref||'audit').replace(/[^\w-]+/g,'_'))+'/'+Date.now()+'_'+f.name.replace(/[^\w.-]+/g,'_');
-      const {error}=await sb.storage.from('evidence').upload(path,f.file);
-      if(error){up.textContent='Upload';alert('Upload failed: '+error.message+'\nRun the "Evidence storage" section of supabase-setup.sql if you haven\'t.');return;}
-      f.uploaded=true;renderAuditFiles();
-    };
-    row.querySelector('[data-a="x"]').onclick=()=>{auditFiles.splice(i,1);renderAuditFiles();updateAuditMeta();};
-    box.appendChild(row);
-  });
+  attAudit=createAttachments({input:'#a_files',pick:'#aPick',cam:'#a_cam',camBtn:'#aCam',list:'#aFileList',
+    folder:()=>'audit/'+(state.audit.ref||'audit'),empty:'No evidence attached yet.',onChange:updateAuditMeta});
+  updateAuditMeta();
 }
 function auditCounts(){const c={NC:0,Obs:0,OFI:0};state.audit.items.forEach(i=>{if(c[i.t]!=null)c[i.t]++;});return c;}
 function renderAuditItems(){
@@ -1299,7 +1386,7 @@ function renderAuditItems(){
 function updateAuditMeta(){
   const a=state.audit,c=auditCounts();
   const cc=$('#aCounts');if(cc)cc.textContent='NC '+c.NC+' · Obs '+c.Obs+' · OFI '+c.OFI;
-  $('#auditMeta').textContent=(a.ref||'Unsaved audit')+' · '+a.items.length+' finding(s) · '+auditFiles.length+' evidence file(s)';
+  $('#auditMeta').textContent=(a.ref||'Unsaved audit')+' · '+a.items.length+' finding(s) · '+attAudit.files.length+' evidence file(s)';
 }
 function auditPrintDoc(){
   const a=state.audit;
@@ -1314,11 +1401,11 @@ function auditPrintDoc(){
     +'<h4>Findings register</h4><table class="pt"><tbody><tr><td><strong>#</strong></td><td><strong>Type</strong></td><td><strong>Finding</strong></td><td><strong>Action</strong></td><td><strong>Owner</strong></td><td><strong>Due</strong></td></tr>'
     +(a.items.length?a.items.map((it,i)=>'<tr><td>'+(i+1)+'</td><td class="a">'+esc(it.t)+'</td><td>'+esc(it.d)+'</td><td>'+esc(it.a)+'</td><td>'+esc(it.o)+'</td><td class="a">'+esc(it.due)+'</td></tr>').join(''):'<tr><td colspan="6">No findings recorded.</td></tr>')
     +'</tbody></table>'
-    +'<h4>Evidence attached</h4><table class="pt"><tbody>'+(auditFiles.length?auditFiles.map((f,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(f.name)+'</td><td>'+f.kind+'</td><td class="a">'+(f.uploaded?'Uploaded':'Local')+'</td></tr>').join(''):'<tr><td>—</td></tr>')+'</tbody></table>'
+    +'<h4>Evidence attached</h4><table class="pt"><tbody>'+(attAudit.files.length?attAudit.files.map((f,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(f.name)+'</td><td>'+f.kind+'</td><td class="a">'+(f.uploaded?'Uploaded':'Local')+'</td></tr>').join(''):'<tr><td>—</td></tr>')+'</tbody></table>'
     +'<div class="sigs"><div>Lead auditor</div><div>Auditee</div><div>Follow-up by</div><div>Date</div></div></div>';
 }
 $('#auditPrint').onclick=()=>{$('#printArea').innerHTML=auditPrintDoc();window.print();};
-$('#auditReset').onclick=()=>{if(!confirm('Clear this audit form?'))return;state.audit=defaultAudit();persistAudit();auditFiles=[];auditInit=false;ensureAuditInit();};
+$('#auditReset').onclick=()=>{if(!confirm('Clear this audit form?'))return;state.audit=defaultAudit();persistAudit();attAudit.files.length=0;auditInit=false;ensureAuditInit();};
 
 /* ---- daily EHS dashboard ---- */
 const DAILY_METRICS=[
@@ -1399,6 +1486,9 @@ function updateDailyMeta(){
 }
 function renderDaily(){
   if(!$('#d_date').value)$('#d_date').value=todayISO();
+  if(!renderDaily._att){renderDaily._att=true;
+    attDaily=createAttachments({input:'#d_att',pick:'#dAttPick',cam:'#d_cam',camBtn:'#dCam',list:'#dAttList',
+      folder:()=>'daily/'+($('#d_date').value||todayISO()),empty:'No site photos or reports attached for this session.'});}
   renderKpis();renderTrend();renderNumGrid();renderRecent();updateDailyMeta();
 }
 $('#d_date').onchange=renderDaily;
@@ -1420,9 +1510,20 @@ function dailyDoc(){
     +DAILY_METRICS.map(m=>'<tr><td>'+m.l+'</td><td class="a">'+fmt(e[m.id])+'</td><td class="a">'+(m.cum?fmt(c[m.id]):'—')+'</td></tr>').join('')
     +'</tbody></table>'
     +'<h4>Remarks / highlights</h4><table class="pt"><tbody><tr><td style="height:44px">'+esc(e.remarks||'')+'</td></tr></tbody></table>'
+    +'<h4>Attachments</h4><table class="pt"><tbody>'+(attDaily.files.length?attDaily.files.map((f,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(f.name)+'</td><td class="a">'+(f.uploaded?'Uploaded':'Local')+'</td></tr>').join(''):'<tr><td>—</td></tr>')+'</tbody></table>'
     +'<div class="sigs"><div>Prepared by (EHS)</div><div>Project Lead</div><div>Client / PMC</div><div>Date</div></div></div>';
 }
 $('#dailyPrint').onclick=()=>{$('#printArea').innerHTML=dailyDoc();window.print();};
+$('#dailyCsv').onclick=()=>{
+  const cols=['date'].concat(DAILY_METRICS.map(m=>m.id)).concat(['remarks']);
+  const rows=[cols.join(',')];
+  Object.keys(state.daily).sort().forEach(dt=>{
+    const e=state.daily[dt];
+    rows.push([dt].concat(DAILY_METRICS.map(m=>e[m.id]!=null?e[m.id]:'')).concat(['"'+String(e.remarks||'').replace(/"/g,'""')+'"']).join(','));
+  });
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ehs-register.csv';document.body.appendChild(a);a.click();a.remove();
+};
 
 
 /* ---- risk matrix ---- */
@@ -1490,7 +1591,7 @@ function renderEmpty(){
   const q=$('#quickFreeAI');if(q)q.onclick=ev=>{ev.preventDefault();openSettings();setProv='openai';renderProvTabs();renderProvFields();};
 }
 /* ---- signed-in dashboard home (role-based) ---- */
-const ROLE_META={master:{l:'Master admin',c:'#7C5CD6'},org_admin:{l:'Org admin',c:'var(--mandatory,#1F6FB2)'},ehs_executive:{l:'EHS Executive',c:'var(--accent)'}};
+const ROLE_META={master:{l:'Master admin',c:'#7C5CD6'},org_admin:{l:'Verifier & issuer (Org admin)',c:'var(--mandatory,#1F6FB2)'},ehs_executive:{l:'Requester (EHS Executive)',c:'var(--accent)'},sme:{l:'SME reviewer',c:'var(--r-med)'},viewer:{l:'Member (viewer)',c:'var(--text-3)'}};
 function renderHome(){
   const e=document.createElement('div');e.className='empty';
   const name=(cloud.user.user_metadata&&cloud.user.user_metadata.full_name)||(cloud.user.email||'').split('@')[0];
@@ -1502,11 +1603,10 @@ function renderHome(){
     {v:state.permit.status||'Draft',l:'Permit status'},
     {v:(state.audit.ref||'—'),l:'Open audit'}
   ];
-  const acts=[
-    {id:'go-daily',l:'Daily dashboard'},
-    {id:'go-permit',l:'Permit to work'},
-    {id:'go-audit',l:'Audit'}
-  ];
+  const acts=[{id:'go-daily',l:'Daily dashboard'}];
+  if(can('permit'))acts.push({id:'go-permit',l:'Permit to work'});
+  if(can('audit'))acts.push({id:'go-audit',l:'Audit'});
+  if(cloud.role==='sme')acts.push({id:'go-approvals',l:'Review queue (SME)'});
   if(cloud.role==='org_admin'||cloud.role==='master')acts.push({id:'go-team',l:'Organization members'},{id:'go-approvals',l:'Permit approvals'});
   if(cloud.role==='master')acts.push({id:'go-adm',l:'Admin panel'});
   e.innerHTML=`<div class="hi glogo"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".5"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -1514,7 +1614,7 @@ function renderHome(){
     <div class="home-chips"><span class="role-chip" style="background:${rm.c}">${rm.l}</span>${cloud.orgName?'<span class="org-chip">'+esc(cloud.orgName)+'</span>':'<span class="org-chip">No organization assigned yet</span>'}</div>
     <div class="home-stats">${stats.map(s=>'<div class="kpi"><div class="kv" style="font-size:18px">'+esc(String(s.v))+'</div><div class="kl">'+s.l+'</div></div>').join('')}</div>
     <div class="home-acts">${acts.map(a=>'<button class="pbtn" id="'+a.id+'">'+a.l+' →</button>').join('')}</div>
-    <p class="note">${isOffline()?'AI is offline — <a href="#" id="quickFreeAI">connect a free AI model →</a> Or just ask me anything below.':'Ask me anything below — incidents, risk, first aid, compliance.'}</p>`;
+    <p class="note">${cloud.role==='viewer'?'Your account is registered as a viewer. Dashboards and documents are open — permits, audits and the AI agent unlock once your admin assigns your duty role.':(isOffline()?'AI is offline — <a href="#" id="quickFreeAI">connect a free AI model →</a> Or just ask me anything below.':'Ask me anything below — incidents, risk, first aid, compliance.')}</p>`;
   thread.appendChild(e);
   const on=(id,fn)=>{const b=$('#'+id);if(b)b.onclick=fn;};
   on('go-daily',()=>setView('daily'));on('go-permit',()=>setView('permit'));on('go-audit',()=>setView('audit'));
@@ -1555,6 +1655,7 @@ function autoGrow(){input.style.height='auto';input.style.height=Math.min(input.
 
 async function runTurn(text,focusLine){
   if(!text||state.busy)return;
+  if(typeof can==='function'&&!can('ai')){respondOffline(text,'role');return;}
   if(isOffline()){respondOffline(text,state.provider==='offline'?'provider':'mode');return;}
   if(state.messages.length===0)thread.innerHTML='';
   state.messages.push({role:'user',content:text});addMsg('user',text);persist();
@@ -1668,7 +1769,7 @@ function offlineAnswer(q){
 function respondOffline(text,reason){
   if(state.messages.length===0)thread.innerHTML='';
   state.messages.push({role:'user',content:text});addMsg('user',text);
-  const head=reason==='provider'?'_Offline mode — built-in EHS reference. Connect Claude or a free / local LLM in Settings for full AI answers._\n\n':reason==='mode'?'_Offline assist is on — turn it off in the logo menu for full AI answers._\n\n':'_Offline — set up a model in Settings for full AI answers._\n\n';
+  const head=reason==='role'?'_The AI agent is available to assigned duty roles — your admin can grant access. Meanwhile, here\'s the built-in reference:_\n\n':reason==='provider'?'_Offline mode — built-in EHS reference. Connect Claude or a free / local LLM in Settings for full AI answers._\n\n':reason==='mode'?'_Offline assist is on — turn it off in the logo menu for full AI answers._\n\n':'_Offline — set up a model in Settings for full AI answers._\n\n';
   const full=head+offlineAnswer(text);
   addMsg('assistant',full);
   state.messages.push({role:'assistant',content:full});persist();
@@ -1962,7 +2063,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSettings();clo
 /* init */
 renderModes();renderSuggest();renderCtx();renderRailTools();renderThread();
 let permitInit=false,matrixInit=false;
-function ensurePermitInit(){if(permitInit)return;permitInit=true;bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();}
+function ensurePermitInit(){if(permitInit)return;permitInit=true;bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();
+  attPermit=createAttachments({input:'#p_att',pick:'#pAttPick',cam:'#p_cam',camBtn:'#pCam',list:'#pAttList',
+    folder:()=>'permit/'+(state.permit.header.permitNo||'permit'),empty:'No drawings, RAs or photos attached yet.'});}
 function ensureMatrixInit(){if(matrixInit)return;matrixInit=true;renderMatrix();}
 updateStandardsSub();
 setStatus();toggleSend();refreshLogo();
@@ -2017,7 +2120,7 @@ async function afterSignIn(){
   cloud.guest=false;store.del('guardian.guest');
   if(location.hash&&/access_token=|refresh_token=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search);
   try{await fetchProfile();}catch(e){authMsg('Signed in as '+((cloud.user&&cloud.user.email)||'user')+', but couldn\'t load your profile ('+(e.message||e)+'). Ask your admin, or retry.','bad');return;}
-  showAuth(false);setCloudBadge();cloudLoadDays();
+  showAuth(false);setCloudBadge();applyRoleUI();cloudLoadDays();
   if(state.messages.length===0&&state.view==='chat')renderThread();   /* show the dashboard home */
 }
 async function initCloud(){
@@ -2027,7 +2130,7 @@ async function initCloud(){
   /* register the listener BEFORE anything else so an OAuth return can't be missed */
   sb.auth.onAuthStateChange((ev,s)=>{
     if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
-    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;masterUnlocked=false;setCloudBadge();showAuth(true);}
+    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;masterUnlocked=false;setCloudBadge();applyRoleUI();showAuth(true);}
   });
   const hashParams=new URLSearchParams(location.hash.replace(/^#/,''));
   const qsParams=new URLSearchParams(location.search);
@@ -2109,13 +2212,36 @@ $('#authGuest').onclick=e=>{
 const _persistDaily=persistDaily;
 persistDaily=function(){_persistDaily();};
 (function(){const orig=$('#dailySave').onclick;
-  $('#dailySave').onclick=()=>{if(guestGate('Logging site data'))return;orig();const sel=$('#d_date').value;if(sel&&state.daily[sel])cloudSaveDay(sel,state.daily[sel]);};
+  $('#dailySave').onclick=()=>{if(guestGate('Logging site data'))return;if(roleGate('dailyWrite','Logging site data'))return;orig();const sel=$('#d_date').value;if(sel&&state.daily[sel])cloudSaveDay(sel,state.daily[sel]);};
   const origDel=$('#dailyDelete').onclick;
-  $('#dailyDelete').onclick=()=>{if(guestGate('Editing the site register'))return;origDel();};
+  $('#dailyDelete').onclick=()=>{if(guestGate('Editing the site register'))return;if(roleGate('dailyWrite','Editing the site register'))return;origDel();};
 })();
 
 /* ---- permit request & approval workflow ---- */
 function canApprove(){return cloud.role==='master'||cloud.role==='org_admin'}
+/* ---- duty-role feature matrix ---- */
+const ROLE_FEAT={
+  viewer:{ai:false,permit:false,audit:false,dailyWrite:false},
+  ehs_executive:{ai:true,permit:true,audit:true,dailyWrite:true},
+  sme:{ai:true,permit:false,audit:true,dailyWrite:false,review:true},
+  org_admin:{ai:true,permit:true,audit:true,dailyWrite:true,review:true,approve:true},
+  master:{ai:true,permit:true,audit:true,dailyWrite:true,review:true,approve:true}
+};
+function can(f){
+  if(!cloudEnabled()||!cloud.user)return true;      /* local mode: unrestricted */
+  const r=ROLE_FEAT[cloud.role]||ROLE_FEAT.viewer;
+  return r[f]===true;
+}
+function roleGate(f,label){
+  if(can(f))return false;
+  alert(label+' requires an assigned duty role.\n\nYour account is currently "'+(ROLE_META[cloud.role]?ROLE_META[cloud.role].l:cloud.role)+'" — ask your organization admin (or master) to assign your duty.');
+  return true;
+}
+function applyRoleUI(){
+  const show=(id,ok)=>{const el=$(id);if(el)el.style.display=ok?'':'none';};
+  show('#permitNav',can('permit'));
+  show('#auditNav',can('audit'));
+}
 function updatePermitCloudUI(){
   const btn=$('#permitSubmit');if(!btn)return;
   btn.style.display=(sb&&cloud.user&&cloud.org)?'inline-flex':'none';
@@ -2153,17 +2279,22 @@ $('#permitSubmit').onclick=submitPermitRequest;
 async function renderApprovalsList(box,showOrg){
   box.innerHTML='<div class="prov-test wait">Loading…</div>';
   const {data,error}=await sb.from('permit_requests')
-    .select('id,org_id,requester_name,permit_no,work_types,status,decision_note,created_at')
+    .select('id,org_id,requester_name,permit_no,work_types,status,decision_note,sme_note,created_at')
     .order('created_at',{ascending:false}).limit(30);
-  if(error){box.innerHTML='<div class="prov-test bad">'+esc(error.message)+' — run the "Permit request & approval workflow" SQL section.</div>';return;}
+  if(error){box.innerHTML='<div class="prov-test bad">'+esc(error.message)+' — run the "Permit request & approval workflow" and "Duty roles & SME review" SQL sections.</div>';return;}
   if(!data||!data.length){box.innerHTML='<div class="prov-test">No permit requests yet.</div>';return;}
   box.innerHTML='';
   data.forEach(r=>{
     const row=document.createElement('div');row.className='doc-row';
+    const smeAllowed=cloud.role==='sme'||canApprove();
     row.innerHTML='<div class="doc-meta"><b>'+esc(r.permit_no||'(no number)')+' <span class="req-chip '+r.status+'" style="margin-left:6px">'+r.status+'</span></b>'
       +'<span>'+esc(r.requester_name||'—')+' · '+esc(r.work_types||'')+' · '+new Date(r.created_at).toLocaleString()
-      +(r.decision_note?' · note: '+esc(r.decision_note):'')+'</span></div>'
-      +(r.status==='pending'&&canApprove()?'<div class="doc-acts"><button class="doc-btn" data-a="ok">Approve</button><button class="doc-btn" data-a="no">Reject</button></div>':'');
+      +(r.sme_note?'<br>SME review: '+esc(r.sme_note):'')
+      +(r.decision_note?'<br>Decision: '+esc(r.decision_note):'')+'</span></div>'
+      +'<div class="doc-acts">'
+      +(r.status==='pending'&&smeAllowed?'<button class="doc-btn" data-a="sme">'+(r.sme_note?'Edit review':'SME review')+'</button>':'')
+      +(r.status==='pending'&&canApprove()?'<button class="doc-btn" data-a="ok">Approve</button><button class="doc-btn" data-a="no">Reject</button>':'')
+      +'</div>';
     const decide=async(status)=>{
       const note=prompt(status==='approved'?'Approval note (optional):':'Reason for rejection:')||'';
       if(status==='rejected'&&!note)return;
@@ -2173,12 +2304,20 @@ async function renderApprovalsList(box,showOrg){
     };
     const ok=row.querySelector('[data-a="ok"]');if(ok)ok.onclick=()=>decide('approved');
     const no=row.querySelector('[data-a="no"]');if(no)no.onclick=()=>decide('rejected');
+    const sm=row.querySelector('[data-a="sme"]');
+    if(sm)sm.onclick=async()=>{
+      const note=prompt('SME review / suggestions for this permit:',r.sme_note||'');
+      if(note===null)return;
+      const {error:e3}=await sb.rpc('sme_review',{req:r.id,note});
+      if(e3){alert(e3.message+'\nRun the "Duty roles & SME review" SQL section if missing.');return;}
+      renderApprovalsList(box,showOrg);
+    };
     box.appendChild(row);
   });
 }
 function closeApprovals(){$('#approvalsOverlay').classList.remove('show')}
 function openApprovals(){
-  if(!sb||!cloud.user||!canApprove())return;
+  if(!sb||!cloud.user||!(canApprove()||cloud.role==='sme'))return;
   $('#approvalsOverlay').classList.add('show');
   renderApprovalsList($('#approvalsBody'),cloud.role==='master');
 }
@@ -2261,7 +2400,7 @@ async function renderMasterUsers(box){
     +orgs.map(o=>'<div class="doc-row"><div class="doc-meta"><b>'+esc(o.name)+'</b><span>'+profs.filter(p=>p.org_id===o.id).length+' member(s)</span></div></div>').join('')
     +'<div class="doc-sec" style="margin-top:12px">Users ('+profs.length+')</div>'
     +profs.map(p=>'<div class="doc-row" data-uid="'+p.id+'"><div class="doc-meta"><b>'+esc(p.full_name||p.id.slice(0,8))+'</b></div>'
-      +'<div class="doc-acts"><select class="doc-btn" data-f="role"><option'+(p.role==='ehs_executive'?' selected':'')+'>ehs_executive</option><option'+(p.role==='org_admin'?' selected':'')+'>org_admin</option><option'+(p.role==='master'?' selected':'')+'>master</option></select>'
+      +'<div class="doc-acts"><select class="doc-btn" data-f="role"><option'+(p.role==='viewer'?' selected':'')+'>viewer</option><option'+(p.role==='ehs_executive'?' selected':'')+'>ehs_executive</option><option'+(p.role==='sme'?' selected':'')+'>sme</option><option'+(p.role==='org_admin'?' selected':'')+'>org_admin</option><option'+(p.role==='master'?' selected':'')+'>master</option></select>'
       +'<select class="doc-btn" data-f="org">'+orgOpt(p.org_id)+'</select>'
       +'<button class="doc-btn" data-f="save">Save</button></div></div>').join('')
     +'<div class="doc-note">Create user accounts (email + password) in the Supabase dashboard → Authentication; they appear here after first sign-in. The service key never touches this site.</div>';
@@ -2280,6 +2419,20 @@ $('#masterNewOrg').onclick=async()=>{
   const name=prompt('Organization name:');if(!name)return;
   await sb.from('organizations').insert({name});renderMaster();
 };
+/* Ask Guardian from any page: carries the current page as context */
+$('#askFab').onclick=()=>{
+  let ctx='';
+  if(state.view==='permit')ctx='Here is my current permit to work:\n\n'+serializePermit();
+  else if(state.view==='audit'){const a=state.audit,c=auditCounts();
+    ctx='Here is my current audit ('+(a.ref||'no ref')+', scope: '+(a.scope||'—')+'): NC '+c.NC+', Obs '+c.Obs+', OFI '+c.OFI+'.\nFindings: '+(a.items.map((it,i)=>(i+1)+'('+it.t+') '+it.d).join('; ')||'none yet')+'.';}
+  else if(state.view==='daily'){const sel=$('#d_date').value,e=state.daily[sel]||{};
+    ctx='Here is my daily EHS log for '+sel+': '+DAILY_METRICS.map(m=>m.l+': '+(e[m.id]!=null?e[m.id]:0)).join(', ')+'.';}
+  setView('chat');
+  input.value=(ctx?ctx+'\n\nMy question: ':'');
+  autoGrow();toggleSend();input.focus();
+  input.setSelectionRange(input.value.length,input.value.length);
+};
+
 /* team modal close */
 function closeTeam(){$('#teamOverlay').classList.remove('show')}
 $('#doneTeam').onclick=closeTeam;
@@ -2293,6 +2446,11 @@ function checkAdmRoute(){
   }
 }
 window.addEventListener('hashchange',checkAdmRoute);
+
+/* offline launch: register the service worker (needs sw.js beside index.html) */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
 
 const _ic=initCloud();
 if(_ic&&_ic.then)_ic.then(checkAdmRoute);else checkAdmRoute();
