@@ -477,6 +477,10 @@
     <nav class="modes" id="modes"></nav>
 
     <div class="side-label">Site</div>
+    <button class="tool-btn" id="homeNav" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 11 12 3l9 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v10h5v-6h4v6h5V10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tt">Home<span class="sub">Your dashboard</span></span>
+    </button>
     <button class="tool-btn" id="dailyNav">
       <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v4M16 3v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7 15h3v3H7z" fill="currentColor" opacity=".5"/><path d="M13 14l2 2 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="tt">Daily dashboard<span class="sub">Log activities · daily vs cumulative</span></span>
@@ -567,6 +571,7 @@
               <div class="fld"><label>Valid up to</label><input id="p_validUpto" placeholder="e.g. 18:00" /></div>
               <div class="fld"><label>Contractor</label><input id="p_contractor" placeholder="Contractor name" /></div>
               <div class="fld"><label>Department</label><input id="p_department" placeholder="Department" /></div>
+              <div class="fld"><label>Permit basis</label><select id="p_basis"><option>General PTW</option><option>ISO 45001-aligned</option><option>Client standard</option><option>Custom</option></select></div>
               <div class="fld"><label>Project</label><input id="p_project" placeholder="Project name" /></div>
               <div class="fld"><label>Location of work</label><input id="p_location" placeholder="e.g. 11th floor, South Tower" /></div>
               <div class="fld full"><label>Description of work</label><textarea id="p_description" placeholder="What work is being carried out?"></textarea></div>
@@ -637,6 +642,11 @@
       </div>
     </div>
 
+    <!-- Home dashboard view -->
+    <div id="homeView" class="view" style="display:none">
+      <div class="permit-scroll"><div class="permit" id="homeBody"></div></div>
+    </div>
+
     <!-- Audit view -->
     <div id="auditView" class="view" style="display:none">
       <div class="permit-scroll">
@@ -648,6 +658,7 @@
               <div class="fld"><label>Date</label><input id="a_date" type="date" /></div>
               <div class="fld"><label>Area / scope</label><input id="a_scope" placeholder="e.g. Warehouse block B" /></div>
               <div class="fld"><label>Auditor(s)</label><input id="a_auditor" placeholder="Names" /></div>
+              <div class="fld"><label>Audit basis</label><select id="a_basis"><option>General</option><option>ISO 45001</option><option>ISO 14001</option><option>ISO 9001</option><option>Factories Act 1948</option><option>OSHA 29 CFR</option><option>Client / custom</option></select></div>
               <div class="fld full"><label>Criteria</label><input id="a_criteria" placeholder="e.g. ISO 45001 cl.8, legal register, client HSE plan" /></div>
             </div>
           </div>
@@ -739,7 +750,7 @@
       <div class="logo glogo"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div><div style="font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:17px">Guardian</div><div style="font-size:11px;color:var(--text-3)" id="authSub">Organization sign-in</div></div>
     </div>
-    <div class="field" id="authNameW" style="display:none"><label for="authName">Full name</label><input id="authName" autocomplete="name" placeholder="Your name" style="font-family:inherit"/></div>
+
     <div class="field"><label for="authEmail">Work email</label><input id="authEmail" type="email" autocomplete="username" placeholder="you@company.com" style="font-family:inherit"/></div>
     <div class="field"><label for="authPw">Password</label><input id="authPw" type="password" autocomplete="current-password" placeholder="••••••••"/></div>
     <div class="prov-test" id="authMsg"></div>
@@ -749,9 +760,8 @@
       <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.2 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
       Sign in with Google
     </button>
-    <div style="text-align:center;margin-top:14px"><a href="#" id="authToggle" style="font-size:12.5px;font-weight:600">New here? Create an account</a></div>
-    <div style="text-align:center;margin-top:8px"><a href="#" id="authGuest" style="font-size:12px;color:var(--text-3)">View as guest — limited overview</a></div>
-    <div style="font-size:11.5px;color:var(--text-3);margin-top:12px;line-height:1.5" id="authNote">Sign up instantly — your organization admin then assigns your site and role before you can see shared data.</div>
+    <div style="text-align:center;margin-top:14px"><a href="#" id="authGuest" style="font-size:12px;color:var(--text-3)">View as guest — limited overview</a></div>
+    <div style="font-size:11.5px;color:var(--text-3);margin-top:12px;line-height:1.5" id="authNote">Accounts are created by your administrator — ask them for access with your work email.</div>
   </div>
 </div>
 
@@ -890,7 +900,7 @@ const store={
 const $=s=>document.querySelector(s);
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-const defaultPermit=()=>({header:{permitNo:'',persons:'',date:'',validUpto:'',contractor:'',department:'',project:'',location:'',description:''},types:{height:false,hot:false,demolition:false},checks:{},ppe:{},ppeExtra:'',status:'Draft',refs:{tra:'',icc:'',simops:''},gas:{o2:'',lel:'',co:'',h2s:'',time:'',by:''},audit:{all:true,custom:''}});
+const defaultPermit=()=>({header:{permitNo:'',persons:'',date:'',validUpto:'',contractor:'',department:'',project:'',location:'',description:''},types:{height:false,hot:false,demolition:false},checks:{},ppe:{},ppeExtra:'',status:'Draft',basis:'General PTW',refs:{tra:'',icc:'',simops:''},gas:{o2:'',lel:'',co:'',h2s:'',time:'',by:''},audit:{all:true,custom:''}});
 const PERMIT_STATUSES=['Draft','Assessed','Approved','Issued','Active','Suspended','Closed'];
 
 const state={
@@ -906,7 +916,7 @@ const state={
   offline:store.get('guardian.offline')==='1',
   lastError:false,
   messages:JSON.parse(store.get('guardian.msgs')||'[]'),
-  permit:(function(){const p=JSON.parse(store.get('guardian.permit')||'null')||defaultPermit();const d=defaultPermit();['refs','gas','audit'].forEach(k=>p[k]=p[k]||d[k]);p.status=p.status||'Draft';return p;})(),
+  permit:(function(){const p=JSON.parse(store.get('guardian.permit')||'null')||defaultPermit();const d=defaultPermit();['refs','gas','audit'].forEach(k=>p[k]=p[k]||d[k]);p.status=p.status||'Draft';p.basis=p.basis||'General PTW';return p;})(),
   busy:false
 };
 const PROVIDERS={offline:'Offline',anthropic:'Claude',openai:'Free LLM',ollama:'Ollama (local)'};
@@ -949,6 +959,8 @@ const MODES={
 
 const STANDARDS=[
   {id:'iso45001',label:'ISO 45001',note:'Int. OH&S'},
+  {id:'iso14001',label:'ISO 14001',note:'Environmental'},
+  {id:'iso9001',label:'ISO 9001',note:'Quality'},
   {id:'india_fa',label:'India — Factories Act 1948',note:'Factories'},
   {id:'india_bocw',label:'India — BOCW Act 1996',note:'Construction'},
   {id:'usa_osha',label:'USA — OSHA (29 CFR)',note:'US federal'},
@@ -1036,10 +1048,12 @@ function setView(v){
   $('#permitView').style.display=v==='permit'?'flex':'none';
   $('#dailyView').style.display=v==='daily'?'flex':'none';
   $('#auditView').style.display=v==='audit'?'flex':'none';
+  $('#homeView').style.display=v==='home'?'flex':'none';
   $('#auditNav').classList.toggle('active',v==='audit');
+  $('#homeNav').classList.toggle('active',v==='home');
   $('#permitNav').classList.toggle('active',v==='permit');
   $('#dailyNav').classList.toggle('active',v==='daily');
-  const fab=$('#askFab');if(fab)fab.style.display=(v!=='chat')?'flex':'none';
+  const fab=$('#askFab');if(fab)fab.style.display=(v!=='chat'&&v!=='home')?'flex':'none';
   if(v==='permit'){
     if(typeof ensurePermitInit==='function')ensurePermitInit();
     if(typeof updatePermitCloudUI==='function')updatePermitCloudUI();
@@ -1051,6 +1065,11 @@ function setView(v){
     $('#ctxTitle').textContent='Daily dashboard';
     $('#ctxSub').textContent='Log today\'s EHS activities — see daily vs cumulative at a glance.';
     renderDaily();
+  }else if(v==='home'){
+    document.querySelectorAll('#modes .mode').forEach(x=>x.classList.remove('active'));
+    $('#ctxTitle').textContent='Home';
+    $('#ctxSub').textContent='Your role-based dashboard.';
+    renderHome();
   }else if(v==='audit'){
     document.querySelectorAll('#modes .mode').forEach(x=>x.classList.remove('active'));
     $('#ctxTitle').textContent='Audit';
@@ -1107,6 +1126,7 @@ function bindHeader(){
     el.oninput=()=>{state.permit.header[k]=el.value;persistPermit();};
   });
   const ex=$('#p_ppeExtra');ex.value=state.permit.ppeExtra||'';ex.oninput=()=>{state.permit.ppeExtra=ex.value;persistPermit();};
+  const pb=$('#p_basis');pb.value=state.permit.basis||'General PTW';pb.onchange=()=>{state.permit.basis=pb.value;persistPermit();};
   /* eVision-style extras */
   const bind=(sel,obj,key)=>{const el=$(sel);if(!el)return;el.value=obj[key]||'';el.oninput=()=>{obj[key]=el.value;persistPermit();};};
   bind('#p_tra',state.permit.refs,'tra');bind('#p_icc',state.permit.refs,'icc');bind('#p_simops',state.permit.refs,'simops');
@@ -1210,7 +1230,7 @@ function serializePermit(){
   });
   const ppe=PPE_LIST.filter(n=>p.ppe[n]);
   out+=`\nPPE selected: ${ppe.length?ppe.join(', '):'none'}${p.ppeExtra?'; additional: '+p.ppeExtra:''}\n`;
-  out+=`\nWorkflow status: ${p.status||'Draft'}\n`;
+  out+=`\nWorkflow status: ${p.status||'Draft'} | Permit basis: ${p.basis||'General PTW'}\n`;
   out+=`TRA ref: ${p.refs.tra||'—'} | Isolation (ICC): ${p.refs.icc||'—'} | SIMOPS check: ${p.refs.simops||'—'}\n`;
   out+=`Gas test: O2 ${p.gas.o2||'—'}% | LEL ${p.gas.lel||'—'}% | CO ${p.gas.co||'—'} ppm | H2S ${p.gas.h2s||'—'} ppm | at ${p.gas.time||'—'} by ${p.gas.by||'—'}\n`;
   const stds=STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label).join('; ');
@@ -1234,7 +1254,8 @@ function buildPrint(){
       <tr><td>Project</td><td>${esc(h.project)||'—'}</td><td>Department</td><td>${esc(h.department)||'—'}</td></tr>
       <tr><td>Location</td><td colspan="3">${esc(h.location)||'—'}</td></tr>
       <tr><td>Work types</td><td colspan="3">${activeSections().map(a=>PERMIT_CHECKS[a].title).join(', ')}</td></tr>
-      <tr><td>Status</td><td>${esc(p.status||'Draft')}</td><td>TRA / ICC</td><td>${esc(p.refs.tra)||'—'} / ${esc(p.refs.icc)||'—'}</td></tr>
+      <tr><td>Status</td><td>${esc(p.status||'Draft')}</td><td>Basis</td><td>${esc(p.basis||'General PTW')}</td></tr>
+      <tr><td>TRA / ICC</td><td colspan="3">${esc(p.refs.tra)||'—'} / ${esc(p.refs.icc)||'—'}</td></tr>
       <tr><td>SIMOPS check</td><td colspan="3">${esc(p.refs.simops)||'—'}</td></tr>
       <tr><td>Gas test</td><td colspan="3">O₂ ${esc(p.gas.o2)||'—'}% · LEL ${esc(p.gas.lel)||'—'}% · CO ${esc(p.gas.co)||'—'} ppm · H₂S ${esc(p.gas.h2s)||'—'} ppm · at ${esc(p.gas.time)||'—'} by ${esc(p.gas.by)||'—'}</td></tr>
       <tr><td>Audit &amp; compliance</td><td colspan="3">${p.audit.all?'Complies with all selected standards: '+(STANDARDS.filter(s=>state.standards[s.id]).map(s=>s.label).join('; ')||'none selected'):'Not marked as complying to all selected standards'}${p.audit.custom?' · Custom audits: '+esc(p.audit.custom):''}</td></tr>
@@ -1289,11 +1310,12 @@ $('#permitReview').onclick=()=>{closeNav();if(isOffline()){reviewPermitOffline()
 $('#permitPrint').onclick=()=>{$('#printArea').innerHTML=buildPrint();window.print();};
 $('#permitReset').onclick=()=>{if(!confirm('Clear this permit?'))return;state.permit=defaultPermit();persistPermit();bindHeader();renderTypeChips();renderChecks();renderPPE();updatePermitMeta();};
 $('#permitNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The permit-to-work system (contains site-sensitive data)'))return;if(roleGate('permit','The permit-to-work system'))return;setView('permit');closeNav();};
+$('#homeNav').onclick=()=>{setView('home');closeNav();};
 $('#dailyNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The site register & dashboard'))return;setView('daily');closeNav();};
 $('#auditNav').onclick=()=>{if(typeof guestGate==='function'&&guestGate('The audit module (contains site-sensitive data)'))return;if(roleGate('audit','The audit module'))return;setView('audit');closeNav();};
 
 /* ---- audit form ---- */
-const defaultAudit=()=>({ref:'',date:'',scope:'',auditor:'',criteria:'',all:true,custom:'',items:[]});
+const defaultAudit=()=>({ref:'',date:'',scope:'',auditor:'',criteria:'',basis:'General',all:true,custom:'',items:[]});
 state.audit=(function(){const a=JSON.parse(store.get('guardian.audit')||'null')||defaultAudit();const m=Object.assign(defaultAudit(),a);
   if(!Array.isArray(m.items))m.items=[];
   if(!m.items.length&&(a.findings||a.actions))m.items.push({t:'Obs',d:a.findings||'',a:a.actions||'',o:'',due:''});  /* migrate old free-text */
@@ -1347,7 +1369,7 @@ function persistAudit(){store.set('guardian.audit',JSON.stringify(state.audit))}
 let auditInit=false;
 function ensureAuditInit(){
   if(auditInit){updateAuditMeta();return;}auditInit=true;
-  const map={ref:'a_ref',date:'a_date',scope:'a_scope',auditor:'a_auditor',criteria:'a_criteria',custom:'a_custom'};
+  const map={ref:'a_ref',date:'a_date',scope:'a_scope',auditor:'a_auditor',criteria:'a_criteria',custom:'a_custom',basis:'a_basis'};
   Object.entries(map).forEach(([k,id])=>{const el=$('#'+id);el.value=state.audit[k]||'';el.oninput=()=>{state.audit[k]=el.value;persistAudit();updateAuditMeta();};});
   $('#aAddItem').onclick=()=>{state.audit.items.push({t:'NC',d:'',a:'',o:'',due:''});persistAudit();renderAuditItems();updateAuditMeta();};
   renderAuditItems();
@@ -1395,6 +1417,7 @@ function auditPrintDoc(){
     +'<table class="pt head"><tbody>'
     +'<tr><td>Date</td><td>'+(esc(a.date)||'—')+'</td><td>Area / scope</td><td>'+(esc(a.scope)||'—')+'</td></tr>'
     +'<tr><td>Auditor(s)</td><td>'+(esc(a.auditor)||'—')+'</td><td>Criteria</td><td>'+(esc(a.criteria)||'—')+'</td></tr>'
+    +'<tr><td>Audit basis</td><td colspan="3">'+esc(a.basis||'General')+'</td></tr>'
     +'<tr><td>Compliance</td><td colspan="3">'+(a.all?'Complies with all selected standards: '+(stds||'none selected'):'Not marked as complying to all selected standards')+(a.custom?' · Custom audits: '+esc(a.custom):'')+'</td></tr>'
     +'<tr><td>Findings summary</td><td colspan="3">NC: '+auditCounts().NC+' · Observations: '+auditCounts().Obs+' · OFI: '+auditCounts().OFI+'</td></tr>'
     +'</tbody></table>'
@@ -1575,7 +1598,6 @@ function addMsg(role,text,opts={}){
 }
 function renderThread(){thread.innerHTML='';if(state.messages.length===0){renderEmpty();return}state.messages.forEach(m=>addMsg(m.role,m.content));}
 function renderEmpty(){
-  if(typeof cloudEnabled==='function'&&cloudEnabled()&&cloud.user){renderHome();return;}
   const e=document.createElement('div');e.className='empty';
   e.innerHTML=`<div class="hi glogo"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".5"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <h2>How can I help keep the site safe?</h2>
@@ -1593,7 +1615,9 @@ function renderEmpty(){
 /* ---- signed-in dashboard home (role-based) ---- */
 const ROLE_META={master:{l:'Master admin',c:'#7C5CD6'},org_admin:{l:'Verifier & issuer (Org admin)',c:'var(--mandatory,#1F6FB2)'},ehs_executive:{l:'Requester (EHS Executive)',c:'var(--accent)'},sme:{l:'SME reviewer',c:'var(--r-med)'},viewer:{l:'Member (viewer)',c:'var(--text-3)'}};
 function renderHome(){
-  const e=document.createElement('div');e.className='empty';
+  if(!cloud.user){setView('chat');return;}
+  const body=$('#homeBody');body.innerHTML='';
+  const e=document.createElement('div');e.className='empty';e.style.margin='0 auto';
   const name=(cloud.user.user_metadata&&cloud.user.user_metadata.full_name)||(cloud.user.email||'').split('@')[0];
   const rm=ROLE_META[cloud.role]||{l:cloud.role||'member',c:'var(--text-3)'};
   const {c,days}=dailyCum();
@@ -1603,7 +1627,7 @@ function renderHome(){
     {v:state.permit.status||'Draft',l:'Permit status'},
     {v:(state.audit.ref||'—'),l:'Open audit'}
   ];
-  const acts=[{id:'go-daily',l:'Daily dashboard'}];
+  const acts=[{id:'go-chat',l:'AI assistant'},{id:'go-daily',l:'Daily dashboard'},{id:'go-docs',l:'Documents'}];
   if(can('permit'))acts.push({id:'go-permit',l:'Permit to work'});
   if(can('audit'))acts.push({id:'go-audit',l:'Audit'});
   if(cloud.role==='sme')acts.push({id:'go-approvals',l:'Review queue (SME)'});
@@ -1611,14 +1635,15 @@ function renderHome(){
   if(cloud.role==='master')acts.push({id:'go-adm',l:'Admin panel'});
   e.innerHTML=`<div class="hi glogo"><svg viewBox="0 0 24 24" fill="none"><circle class="g-ring" cx="12" cy="12" r="10.5" stroke="#fff" stroke-width="1" stroke-dasharray="18 48" stroke-linecap="round" opacity=".5"/><path class="g-shield" d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path class="g-core" d="m9 12 2 2 4-4" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <h2>Welcome back, ${esc(name)}</h2>
-    <div class="home-chips"><span class="role-chip" style="background:${rm.c}">${rm.l}</span>${cloud.orgName?'<span class="org-chip">'+esc(cloud.orgName)+'</span>':'<span class="org-chip">No organization assigned yet</span>'}</div>
+    <div class="home-chips"><span class="role-chip" style="background:${rm.c}">${rm.l}</span>${cloud.title?'<span class="org-chip">'+esc(cloud.title)+'</span>':''}${cloud.orgName?'<span class="org-chip">'+esc(cloud.orgName)+'</span>':'<span class="org-chip">No organization assigned yet</span>'}</div>
     <div class="home-stats">${stats.map(s=>'<div class="kpi"><div class="kv" style="font-size:18px">'+esc(String(s.v))+'</div><div class="kl">'+s.l+'</div></div>').join('')}</div>
     <div class="home-acts">${acts.map(a=>'<button class="pbtn" id="'+a.id+'">'+a.l+' →</button>').join('')}</div>
     <p class="note">${cloud.role==='viewer'?'Your account is registered as a viewer. Dashboards and documents are open — permits, audits and the AI agent unlock once your admin assigns your duty role.':(isOffline()?'AI is offline — <a href="#" id="quickFreeAI">connect a free AI model →</a> Or just ask me anything below.':'Ask me anything below — incidents, risk, first aid, compliance.')}</p>`;
-  thread.appendChild(e);
+  body.appendChild(e);
   const on=(id,fn)=>{const b=$('#'+id);if(b)b.onclick=fn;};
   on('go-daily',()=>setView('daily'));on('go-permit',()=>setView('permit'));on('go-audit',()=>setView('audit'));
   on('go-team',openTeam);on('go-adm',tryOpenMaster);on('go-approvals',openApprovals);
+  on('go-chat',()=>setView('chat'));on('go-docs',()=>{$('#docsBtn').click();});
   const q=$('#quickFreeAI');if(q)q.onclick=ev=>{ev.preventDefault();openSettings();setProv='openai';renderProvTabs();renderProvFields();};
   /* live workflow awareness */
   if(sb&&cloud.user){
@@ -2099,9 +2124,9 @@ async function loadSupabase(){
     s.onload=res;s.onerror=()=>rej(new Error('Could not load auth library'));document.head.appendChild(s);});
 }
 async function fetchProfile(){
-  const {data,error}=await sb.from('profiles').select('role,org_id,full_name,organizations(name)').eq('id',cloud.user.id).single();
+  const {data,error}=await sb.from('profiles').select('role,org_id,full_name,title,organizations(name)').eq('id',cloud.user.id).single();
   if(error)throw error;
-  cloud.role=data.role;cloud.org=data.org_id;cloud.orgName=(data.organizations&&data.organizations.name)||'';
+  cloud.role=data.role;cloud.org=data.org_id;cloud.orgName=(data.organizations&&data.organizations.name)||'';cloud.title=data.title||'';
 }
 async function cloudLoadDays(){
   if(!sb||!cloud.org)return;
@@ -2110,7 +2135,7 @@ async function cloudLoadDays(){
   (data||[]).forEach(r=>{state.daily[r.date]=r.data;});   /* server wins per date */
   persistDaily();
   if(state.view==='daily')renderDaily();
-  if(state.view==='chat'&&state.messages.length===0)renderThread();   /* refresh dashboard stats */
+  if(state.view==='home')renderHome();   /* refresh dashboard stats */
 }
 async function cloudSaveDay(dateISO,entry){
   if(!sb||!cloud.org)return;
@@ -2121,7 +2146,8 @@ async function afterSignIn(){
   if(location.hash&&/access_token=|refresh_token=/.test(location.hash))history.replaceState(null,'',location.pathname+location.search);
   try{await fetchProfile();}catch(e){authMsg('Signed in as '+((cloud.user&&cloud.user.email)||'user')+', but couldn\'t load your profile ('+(e.message||e)+'). Ask your admin, or retry.','bad');return;}
   showAuth(false);setCloudBadge();applyRoleUI();cloudLoadDays();
-  if(state.messages.length===0&&state.view==='chat')renderThread();   /* show the dashboard home */
+  $('#homeNav').style.display='';
+  setView('home');   /* standalone dashboard is the default page after login */
 }
 async function initCloud(){
   if(!cloudEnabled())return;
@@ -2130,7 +2156,7 @@ async function initCloud(){
   /* register the listener BEFORE anything else so an OAuth return can't be missed */
   sb.auth.onAuthStateChange((ev,s)=>{
     if(s&&!cloud.user){cloud.user=s.user;afterSignIn();}
-    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;masterUnlocked=false;setCloudBadge();applyRoleUI();showAuth(true);}
+    else if(ev==='SIGNED_OUT'){cloud.user=null;cloud.role=null;cloud.org=null;masterUnlocked=false;setCloudBadge();applyRoleUI();$('#homeNav').style.display='none';if(state.view==='home')setView('chat');showAuth(true);}
   });
   const hashParams=new URLSearchParams(location.hash.replace(/^#/,''));
   const qsParams=new URLSearchParams(location.search);
@@ -2162,31 +2188,9 @@ async function initCloud(){
   else showAuth(true);
 }
 $('#authPw').addEventListener('keydown',e=>{if(e.key==='Enter')$('#authSignIn').click();});
-/* instant sign-up mode */
-let authMode='signin';
-$('#authToggle').onclick=e=>{
-  e.preventDefault();authMode=authMode==='signin'?'signup':'signin';authMsg('');
-  const up=authMode==='signup';
-  $('#authNameW').style.display=up?'block':'none';
-  $('#authSub').textContent=up?'Create your account':'Organization sign-in';
-  $('#authSignIn').textContent=up?'Create account':'Sign in';
-  $('#authToggle').textContent=up?'Already have an account? Sign in':'New here? Create an account';
-  $('#authPw').autocomplete=up?'new-password':'current-password';
-};
-async function doSignUp(email,pw){
-  const name=$('#authName').value.trim();
-  if(pw.length<6){authMsg('Password must be at least 6 characters.','bad');return;}
-  authMsg('Creating your account…','wait');
-  const {data,error}=await sb.auth.signUp({email,password:pw,options:{data:{full_name:name||email.split('@')[0]}}});
-  if(error){authMsg(error.message,'bad');return;}
-  if(data.session){cloud.user=data.user;authMsg('');await afterSignIn();}
-  else authMsg('Account created — check your email to confirm, then sign in.','ok');
-}
-const _origSignIn=$('#authSignIn');
-_origSignIn.onclick=async()=>{
+$('#authSignIn').onclick=async()=>{
   const email=$('#authEmail').value.trim(),pw=$('#authPw').value;
   if(!email||!pw){authMsg('Enter email and password.','bad');return;}
-  if(authMode==='signup'){await doSignUp(email,pw);return;}
   authMsg('Signing in…','wait');
   const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
   if(error){authMsg(error.message,'bad');return;}
@@ -2424,7 +2428,7 @@ $('#askFab').onclick=()=>{
   let ctx='';
   if(state.view==='permit')ctx='Here is my current permit to work:\n\n'+serializePermit();
   else if(state.view==='audit'){const a=state.audit,c=auditCounts();
-    ctx='Here is my current audit ('+(a.ref||'no ref')+', scope: '+(a.scope||'—')+'): NC '+c.NC+', Obs '+c.Obs+', OFI '+c.OFI+'.\nFindings: '+(a.items.map((it,i)=>(i+1)+'('+it.t+') '+it.d).join('; ')||'none yet')+'.';}
+    ctx='Here is my current audit ('+(a.ref||'no ref')+', basis: '+(a.basis||'General')+', scope: '+(a.scope||'—')+'): NC '+c.NC+', Obs '+c.Obs+', OFI '+c.OFI+'.\nFindings: '+(a.items.map((it,i)=>(i+1)+'('+it.t+') '+it.d).join('; ')||'none yet')+'.';}
   else if(state.view==='daily'){const sel=$('#d_date').value,e=state.daily[sel]||{};
     ctx='Here is my daily EHS log for '+sel+': '+DAILY_METRICS.map(m=>m.l+': '+(e[m.id]!=null?e[m.id]:0)).join(', ')+'.';}
   setView('chat');
